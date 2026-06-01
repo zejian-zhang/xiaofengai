@@ -1,0 +1,4 @@
+/api/song /.netlify/functions/song 200
+/api/check /.netlify/functions/check 200
+/api/stream /.netlify/functions/stream 200
+/api/health /.netlify/functions/health 200
