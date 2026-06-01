@@ -1162,7 +1162,7 @@ kbd { background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.2);
     <div>
       <div class="mobile-access-title">手机访问</div>
       <div class="mobile-access-url" id="mobileAccessUrl">正在获取手机访问地址...</div>
-      <div class="mobile-access-note">手机和电脑连接同一个 Wi-Fi 后，在手机浏览器打开这个地址。</div>
+      <div class="mobile-access-note">手机和电脑都可以直接打开这个 HTTPS 链接，不需要连接同一网络。</div>
     </div>
     <button class="mobile-copy-btn" id="copyMobileUrlBtn" type="button">复制地址</button>
   </section>
@@ -1543,14 +1543,20 @@ function parseMusicRequest(input) {
   let artist = '';
   let song = text;
 
-  const bracketMatch = text.match(/^(.+?)的?[《"'](.+?)[》"']$/);
+  const cleanArtistName = (value) => String(value || '')
+    .trim()
+    .replace(/[，。！？、\s]+$/g, '')
+    .replace(/(?:唱的|演唱的|原唱的|唱|演唱|原唱|老师|歌手|的)$/g, '')
+    .trim();
+
+  const bracketMatch = text.match(/^(.+?)(?:唱的|演唱的|原唱的|的)?[《"'](.+?)[》"']$/);
   if (bracketMatch) {
-    artist = bracketMatch[1].replace(/的$/, '').trim();
+    artist = cleanArtistName(bracketMatch[1]);
     song = bracketMatch[2].trim();
   } else {
-    const deMatch = text.match(/^(.+?)的(.+)$/);
+    const deMatch = text.match(/^(.+?)(?:唱的|演唱的|原唱的|的)(.+)$/);
     if (deMatch && deMatch[1].length >= 2 && deMatch[2].length >= 1) {
-      artist = deMatch[1].trim();
+      artist = cleanArtistName(deMatch[1]);
       song = deMatch[2].replace(/^["'《]+|["'》]+$/g, '').trim();
     }
   }
