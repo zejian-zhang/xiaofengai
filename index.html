@@ -1151,21 +1151,13 @@ kbd { background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.2);
 
 <!-- 主应用容器 -->
 <div class="app-container">
+  <!-- 手机和电脑都可以直接打开 HTTPS 线上链接；页面不再显示手机访问提示框。 -->
 
   <!-- 头部标题 -->
   <div class="header-area">
     <h1>✨ 小锋超级助手</h1>
     <div class="subtitle">语音 · 视觉 · 多模态</div>
   </div>
-
-  <section class="mobile-access-card" id="mobileAccessCard" hidden>
-    <div>
-      <div class="mobile-access-title">手机访问</div>
-      <div class="mobile-access-url" id="mobileAccessUrl">正在获取手机访问地址...</div>
-      <div class="mobile-access-note">手机和电脑都可以直接打开这个 HTTPS 链接，不需要连接同一网络。</div>
-    </div>
-    <button class="mobile-copy-btn" id="copyMobileUrlBtn" type="button">复制地址</button>
-  </section>
 
   <!-- 头像显示区 -->
   <div class="avatar-area">
@@ -1422,40 +1414,12 @@ class ToolManager {
             return '请告诉我您想查询哪个城市的天气，例如"北京天气"。';
           }
         }
-        const cityMap = {'北京':'Beijing','上海':'Shanghai','广州':'Guangzhou','深圳':'Shenzhen',
-          '杭州':'Hangzhou','成都':'Chengdu','武汉':'Wuhan','南京':'Nanjing','西安':'Xian',
-          '重庆':'Chongqing','天津':'Tianjin','苏州':'Suzhou','长沙':'Changsha','郑州':'Zhengzhou',
-          '青岛':'Qingdao','大连':'Dalian','厦门':'Xiamen','昆明':'Kunming','哈尔滨':'Harbin'};
-        const enCity = cityMap[city] || city;
         try {
-          const resp = await fetch(`https://wttr.in/${encodeURIComponent(enCity)}?format=j1&lang=zh`);
+          const resp = await fetch(`/api/weather?q=${encodeURIComponent(text)}&city=${encodeURIComponent(city)}`);
           if (!resp.ok) throw new Error('API error');
           const data = await resp.json();
-          const cur = data.current_condition[0];
-          const weatherCNMap = {
-            'Clear':'晴','Sunny':'晴','Partly cloudy':'多云','Partly Cloudy':'多云',
-            'Cloudy':'阴','Overcast':'阴','Mist':'雾','Fog':'雾','Haze':'霾',
-            'Light rain':'小雨','Light Rain':'小雨','Light drizzle':'小雨','Light Drizzle':'小雨',
-            'Patchy light rain':'小到中雨','Patchy rain possible':'局部阵雨','Patchy rain nearby':'局部阵雨',
-            'Moderate rain':'中雨','Moderate Rain':'中雨','Moderate rain at times':'间歇性中雨',
-            'Heavy rain':'大雨','Heavy Rain':'大雨','Heavy rain at times':'间歇性大雨',
-            'Torrential rain':'暴雨','Light rain shower':'小阵雨','Moderate or heavy rain shower':'中到大阵雨',
-            'Thunderstorm':'雷阵雨','Thunder storm':'雷阵雨','Rain With Thunderstorm':'雷阵雨',
-            'Thundery outbreaks possible':'可能有雷暴','Patchy light rain with thunder':'小到中雨伴雷',
-            'Light snow':'小雪','Light Snow':'小雪','Moderate snow':'中雪','Moderate Snow':'中雪',
-            'Heavy snow':'大雪','Heavy Snow':'大雪','Blizzard':'暴风雪','Blowing snow':'风吹雪',
-            'Snow showers':'阵雪','Light snow showers':'小阵雪','Moderate or heavy snow showers':'中到大阵雪',
-            'Ice pellets':'冰粒','Light sleet':'小冰粒','Moderate or heavy sleet':'中到大冰粒',
-            'Freezing drizzle':'冻毛毛雨','Freezing fog':'冻雾','Light freezing rain':'小冻雨',
-            'Moderate or heavy freezing rain':'中到大冻雨'
-          };
-          const rawDesc = cur.weatherDesc[0].value.trim();
-          const desc = weatherCNMap[rawDesc] || rawDesc;
-          const temp = cur.temp_C;
-          const feels = cur.FeelsLikeC;
-          const wind = cur.windspeedKmph;
-          const humidity = cur.humidity;
-          return `${city}当前天气：${desc}，温度${temp}°C（体感${feels}°C），风速${wind}km/h，湿度${humidity}%。`;
+          if (!(data.code === 200)) throw new Error(data.error || 'API error');
+          return `${data.city}当前天气：${data.description}，温度${data.temp}°C（体感${data.feelsLike}°C），风速${data.wind}km/h，湿度${data.humidity}%。`;
         } catch (e) {
           return `天气查询失败，无法获取${city}的天气信息，请稍后再试。`;
         }

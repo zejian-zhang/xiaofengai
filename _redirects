@@ -2,3 +2,4 @@
 /api/check /.netlify/functions/check 200
 /api/stream /.netlify/functions/stream 200
 /api/health /.netlify/functions/health 200
+/api/weather /.netlify/functions/weather 200
