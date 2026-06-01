@@ -1,0 +1,3829 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>小锋超级助手</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<style>
+/* ===== CSS 自定义属性 - 主题色彩系统 ===== */
+:root {
+  --bg-primary: #0a0e27;
+  --bg-secondary: #111640;
+  --accent-cyan: #00e5ff;
+  --accent-teal: #00bfa5;
+  --accent-purple: #7c4dff;
+  --glass-bg: rgba(255, 255, 255, 0.08);
+  --glass-border: rgba(255, 255, 255, 0.15);
+  --glass-blur: 20px;
+  --text-primary: #e8eaf6;
+  --text-secondary: #9fa8da;
+  --user-bubble: rgba(255, 255, 255, 0.92);
+  --ai-bubble: rgba(0, 229, 255, 0.12);
+  --danger: #ff5252;
+  --success: #69f0ae;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+}
+
+.protocol-banner {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 300;
+  background: linear-gradient(90deg, #ff9800, #f57c00);
+  color: #fff; text-align: center; padding: 8px 16px;
+  font-size: 0.82rem; font-weight: 500;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.secure-media-banner {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 310;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 0;
+  border: 1px solid rgba(255, 193, 7, 0.34);
+  background: rgba(255, 193, 7, 0.1);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  color: #ffe082;
+  font-size: 0.76rem;
+  line-height: 1.45;
+  text-align: center;
+}
+
+/* ===== 星空背景动画 ===== */
+.starfield {
+  position: fixed; inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  background: linear-gradient(135deg, #0a0e27 0%, #1a1040 40%, #0d1b3e 70%, #0a0e27 100%);
+}
+
+.starfield .layer {
+  position: absolute; inset: 0;
+  background-repeat: repeat;
+  animation: starScroll linear infinite;
+  will-change: transform;
+}
+
+.starfield .layer-1 {
+  background-image:
+    radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,0.8) 50%, transparent 100%),
+    radial-gradient(1px 1px at 30% 65%, rgba(255,255,255,0.6) 50%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 55% 15%, rgba(0,229,255,0.7) 50%, transparent 100%),
+    radial-gradient(1px 1px at 75% 80%, rgba(255,255,255,0.5) 50%, transparent 100%),
+    radial-gradient(1px 1px at 90% 40%, rgba(124,77,255,0.6) 50%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 45% 90%, rgba(255,255,255,0.7) 50%, transparent 100%),
+    radial-gradient(1px 1px at 20% 50%, rgba(0,229,255,0.5) 50%, transparent 100%),
+    radial-gradient(1px 1px at 65% 35%, rgba(255,255,255,0.6) 50%, transparent 100%);
+  background-size: 250px 250px;
+  animation-duration: 120s;
+}
+
+.starfield .layer-2 {
+  background-image:
+    radial-gradient(1.5px 1.5px at 15% 30%, rgba(255,255,255,0.9) 50%, transparent 100%),
+    radial-gradient(2px 2px at 40% 70%, rgba(0,229,255,0.6) 50%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 60% 10%, rgba(124,77,255,0.8) 50%, transparent 100%),
+    radial-gradient(1px 1px at 80% 55%, rgba(255,255,255,0.5) 50%, transparent 100%),
+    radial-gradient(2px 2px at 5% 85%, rgba(255,255,255,0.7) 50%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 50% 45%, rgba(0,191,165,0.6) 50%, transparent 100%);
+  background-size: 400px 400px;
+  animation-duration: 200s;
+}
+
+.starfield .layer-3 {
+  background-image:
+    radial-gradient(2px 2px at 25% 45%, rgba(0,229,255,0.8) 50%, transparent 100%),
+    radial-gradient(2.5px 2.5px at 70% 25%, rgba(124,77,255,0.7) 50%, transparent 100%),
+    radial-gradient(2px 2px at 85% 75%, rgba(255,255,255,0.6) 50%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 35% 95%, rgba(0,191,165,0.5) 50%, transparent 100%);
+  background-size: 600px 600px;
+  animation-duration: 300s;
+}
+
+@keyframes starScroll {
+  from { transform: translateY(0); }
+  to { transform: translateY(-600px); }
+}
+
+/* ===== 玻璃拟态面板 ===== */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+}
+
+.glass-panel-strong {
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+}
+
+/* ===== 主布局 ===== */
+.app-container {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* ===== 头部标题区 ===== */
+.header-area {
+  text-align: center;
+  padding: 16px 16px 8px;
+  flex-shrink: 0;
+}
+
+.header-area h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 2px;
+}
+
+.header-area .subtitle {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-top: 2px;
+  letter-spacing: 4px;
+}
+
+.mobile-access-card {
+  margin: 0 16px 10px;
+  padding: 10px 12px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: center;
+  flex-shrink: 0;
+  background: rgba(0, 229, 255, 0.075);
+  border: 1px solid rgba(0, 229, 255, 0.22);
+  border-radius: 14px;
+}
+.mobile-access-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--accent-cyan);
+  margin-bottom: 3px;
+}
+.mobile-access-url {
+  font-size: 0.76rem;
+  color: var(--text-primary);
+  word-break: break-all;
+  line-height: 1.35;
+}
+.mobile-access-note {
+  font-size: 0.68rem;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+.mobile-copy-btn {
+  border: 1px solid rgba(0,229,255,0.38);
+  background: rgba(0,229,255,0.12);
+  color: var(--accent-cyan);
+  border-radius: 999px;
+  padding: 7px 10px;
+  cursor: pointer;
+  font-size: 0.72rem;
+  white-space: nowrap;
+}
+
+/* ===== 头像显示区 ===== */
+.avatar-area {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 8px 0 12px;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.avatar-wrapper {
+  position: relative;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid rgba(0, 229, 255, 0.3);
+  box-shadow: 0 0 30px rgba(0, 229, 255, 0.15), 0 0 60px rgba(124, 77, 255, 0.1);
+  transition: box-shadow 0.5s;
+}
+
+.avatar-wrapper.listening {
+  box-shadow: 0 0 40px rgba(0, 229, 255, 0.35), 0 0 80px rgba(0, 229, 255, 0.15);
+}
+
+.avatar-wrapper.speaking {
+  box-shadow: 0 0 40px rgba(124, 77, 255, 0.35), 0 0 80px rgba(0, 229, 255, 0.2);
+}
+
+.avatar-wrapper.thinking {
+  box-shadow: 0 0 40px rgba(255, 193, 7, 0.3), 0 0 80px rgba(124, 77, 255, 0.15);
+}
+
+#avatarCanvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.camera-section {
+  display: none;
+  position: fixed;
+  top: 80px;
+  z-index: 50;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.camera-section.visible {
+  display: flex;
+}
+
+.camera-container {
+  position: relative;
+  width: 300px;
+  height: 300px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 2px solid rgba(0, 229, 255, 0.3);
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.15), 0 8px 32px rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.camera-close-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  transition: background 0.2s;
+}
+.camera-close-btn:hover {
+  background: rgba(255, 82, 82, 0.8);
+}
+
+.camera-container video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.camera-container .camera-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.75);
+  color: #fff;
+  font-size: 0.78rem;
+  padding: 8px 12px;
+  text-align: center;
+  display: none;
+  word-break: break-all;
+  max-height: 40%;
+  overflow-y: auto;
+}
+
+/* ===== 聊天区域 ===== */
+.chat-area {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 16px 8px;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+.chat-area::-webkit-scrollbar {
+  width: 4px;
+}
+
+.chat-area::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chat-area::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+}
+
+/* ===== 消息气泡 ===== */
+.message-row {
+  display: flex;
+  margin-bottom: 12px;
+  animation: msgFadeIn 0.3s ease-out;
+}
+
+@keyframes msgFadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.message-row.user {
+  justify-content: flex-end;
+}
+
+.message-row.ai {
+  justify-content: flex-start;
+}
+
+.message-bubble {
+  max-width: 80%;
+  padding: 10px 14px;
+  border-radius: 16px;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  word-break: break-word;
+}
+
+.message-row.user .message-bubble {
+  background: var(--user-bubble);
+  color: #1a1a2e;
+  border-bottom-right-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.message-row.ai .message-bubble {
+  background: var(--ai-bubble);
+  color: var(--text-primary);
+  border: 1px solid rgba(0, 229, 255, 0.2);
+  border-bottom-left-radius: 4px;
+  box-shadow: 0 2px 12px rgba(0, 229, 255, 0.08);
+}
+
+.message-bubble pre {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  padding: 10px;
+  overflow-x: auto;
+  margin: 6px 0;
+  font-size: 0.82rem;
+}
+
+.message-bubble code {
+  font-family: "Cascadia Code", "Fira Code", Consolas, monospace;
+  font-size: 0.85em;
+}
+
+.message-bubble p { margin: 4px 0; }
+.message-bubble p:first-child { margin-top: 0; }
+.message-bubble p:last-child { margin-bottom: 0; }
+
+.message-bubble strong { color: var(--accent-cyan); }
+
+/* ===== 底部控制栏 ===== */
+.control-bar {
+  flex-shrink: 0;
+  padding: 10px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.interim-text {
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--accent-cyan);
+  min-height: 1.2em;
+  opacity: 0.8;
+  padding: 0 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.control-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.input-wrapper {
+  flex: 1;
+  position: relative;
+}
+
+.input-wrapper textarea {
+  width: 100%;
+  resize: none;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  padding: 10px 16px;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.3s, box-shadow 0.3s;
+  max-height: 100px;
+  line-height: 1.4;
+  overflow-y: auto;
+}
+
+.input-wrapper textarea:focus {
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 12px rgba(0, 229, 255, 0.2);
+}
+
+.input-wrapper textarea::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.6;
+}
+
+/* ===== 按钮样式 ===== */
+.ctrl-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.ctrl-btn svg {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+}
+
+.send-btn {
+  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-teal));
+  color: #0a0e27;
+  box-shadow: 0 2px 12px rgba(0, 229, 255, 0.3);
+}
+
+.send-btn:hover {
+  transform: scale(1.08);
+  box-shadow: 0 4px 20px rgba(0, 229, 255, 0.5);
+}
+
+.send-btn:active {
+  transform: scale(0.95);
+}
+
+.mic-btn {
+  background: linear-gradient(135deg, var(--accent-purple), #e040fb);
+  color: #fff;
+  box-shadow: 0 2px 12px rgba(124, 77, 255, 0.3);
+  width: 52px;
+  height: 52px;
+}
+
+.mic-btn svg { width: 24px; height: 24px; }
+
+.mic-btn:hover {
+  transform: scale(1.08);
+  box-shadow: 0 4px 20px rgba(124, 77, 255, 0.5);
+}
+
+.mic-btn.recording {
+  background: linear-gradient(135deg, #ff5252, #ff1744);
+  box-shadow: 0 0 20px rgba(255, 82, 82, 0.5);
+  animation: micPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes micPulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(255, 82, 82, 0.5); }
+  50% { box-shadow: 0 0 40px rgba(255, 82, 82, 0.8), 0 0 60px rgba(255, 82, 82, 0.3); }
+}
+
+.camera-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-secondary);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.camera-btn:hover {
+  background: rgba(255, 255, 255, 0.18);
+  color: var(--text-primary);
+}
+
+.camera-btn.active {
+  background: rgba(0, 229, 255, 0.2);
+  color: var(--accent-cyan);
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 12px rgba(0, 229, 255, 0.3);
+}
+
+.gear-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-secondary);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.gear-btn:hover {
+  background: rgba(255, 255, 255, 0.18);
+  color: var(--text-primary);
+  transform: rotate(90deg);
+}
+
+.analyze-btn {
+  background: rgba(0, 229, 255, 0.15);
+  color: var(--accent-cyan);
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  width: auto;
+  border-radius: 20px;
+  padding: 0 14px;
+  font-size: 0.78rem;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.analyze-btn:hover {
+  background: rgba(0, 229, 255, 0.25);
+}
+
+.analyze-btn svg { width: 16px; height: 16px; }
+
+.auto-analyze-btn {
+  background: rgba(124, 77, 255, 0.15);
+  color: var(--accent-purple);
+  border: 1px solid rgba(124, 77, 255, 0.3);
+  width: auto;
+  border-radius: 20px;
+  padding: 0 14px;
+  font-size: 0.78rem;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.auto-analyze-btn:hover {
+  background: rgba(124, 77, 255, 0.25);
+}
+
+.auto-analyze-btn.active {
+  background: rgba(124, 77, 255, 0.35);
+  box-shadow: 0 0 12px rgba(124, 77, 255, 0.4);
+}
+
+.auto-analyze-btn svg { width: 16px; height: 16px; }
+
+.camera-controls {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.camera-controls.visible {
+  display: flex;
+}
+
+/* ===== 设置面板侧边栏 ===== */
+.settings-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 100;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+
+.settings-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.settings-panel {
+  position: fixed;
+  top: 0;
+  right: -360px;
+  width: 340px;
+  max-width: 85vw;
+  height: 100%;
+  z-index: 101;
+  background: rgba(17, 22, 64, 0.95);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border-left: 1px solid rgba(255, 255, 255, 0.15);
+  transition: right 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.settings-panel.open {
+  right: 0;
+}
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 20px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.settings-header h2 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--accent-cyan);
+}
+
+.close-settings {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  transition: all 0.2s;
+}
+
+.close-settings:hover {
+  background: rgba(255, 82, 82, 0.2);
+  color: var(--danger);
+}
+
+.settings-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+}
+
+.field-group label {
+  display: block;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.field-group input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  padding: 10px 14px;
+  color: var(--text-primary);
+  font-size: 0.88rem;
+  outline: none;
+  transition: border-color 0.3s;
+  font-family: inherit;
+}
+
+.field-group input:focus {
+  border-color: var(--accent-cyan);
+}
+
+.field-group input.invalid {
+  border-color: var(--danger);
+}
+
+.field-group input::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.5;
+}
+
+.field-group select option {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.save-settings-btn {
+  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-teal));
+  color: #0a0e27;
+  border: none;
+  border-radius: 12px;
+  padding: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  margin-top: 8px;
+}
+
+.save-settings-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(0, 229, 255, 0.4);
+}
+
+.test-connection-btn {
+  background: linear-gradient(135deg, var(--accent-purple), #e040fb);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  margin-top: 8px;
+}
+
+.test-connection-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(124, 77, 255, 0.4);
+}
+
+.test-connection-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.connection-status {
+  font-size: 0.78rem;
+  min-height: 1.2em;
+  margin-top: 4px;
+}
+
+.settings-hint {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  opacity: 0.6;
+  line-height: 1.5;
+  margin-top: 4px;
+}
+
+/* ===== 设置面板标签页 ===== */
+.settings-tabs { display: flex; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 16px; }
+.settings-tab {
+  flex: 1; text-align: center; padding: 10px 4px; font-size: 0.78rem;
+  color: var(--text-secondary); background: none; border: none; cursor: pointer;
+  border-bottom: 2px solid transparent; transition: all 0.3s; font-family: inherit;
+}
+.settings-tab.active { color: var(--accent-cyan); border-bottom-color: var(--accent-cyan); }
+.settings-tab-content { display: none; flex-direction: column; gap: 16px; }
+.settings-tab-content.active { display: flex; }
+
+/* ===== Toast 通知 ===== */
+.toast-container {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.toast {
+  background: rgba(17, 22, 64, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 10px 20px;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  animation: toastIn 0.3s ease-out, toastOut 0.3s ease-in 2.7s forwards;
+  pointer-events: auto;
+  max-width: 90vw;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.toast.error { border-color: rgba(255, 82, 82, 0.5); color: #ff8a80; }
+.toast.success { border-color: rgba(105, 240, 174, 0.5); color: #69f0ae; }
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes toastOut {
+  from { opacity: 1; }
+  to { opacity: 0; transform: translateY(-10px); }
+}
+
+/* ===== 加载指示器 ===== */
+.typing-indicator {
+  display: flex;
+  gap: 4px;
+  padding: 4px 0;
+}
+
+.typing-indicator span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-cyan);
+  animation: typingDot 1.4s ease-in-out infinite;
+}
+
+.typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+.typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typingDot {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-6px); opacity: 1; }
+}
+
+/* ===== 状态指示器 ===== */
+.status-indicator { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 4px 0 8px; flex-shrink: 0; }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent-teal); transition: background 0.3s; }
+.status-dot.listening { background: var(--accent-cyan); animation: dotPulse 1s infinite; }
+.status-dot.awake { background: var(--accent-purple); animation: dotPulse 0.6s infinite; }
+.status-text { font-size: 0.72rem; color: var(--text-secondary); }
+@keyframes dotPulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.7)} }
+
+/* ===== 语音唤醒开关 ===== */
+.wake-toggle { width: 40px; height: 22px; border-radius: 11px; border: none; background: rgba(255,255,255,0.15); cursor: pointer; position: relative; transition: background 0.3s; padding: 0; display: inline-flex; align-items: center; flex-shrink: 0; }
+.wake-toggle.active { background: var(--accent-cyan); }
+.wake-toggle-pill { width: 18px; height: 18px; border-radius: 50%; background: #fff; position: absolute; left: 2px; transition: transform 0.3s; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+.wake-toggle.active .wake-toggle-pill { transform: translateX(18px); }
+
+/* ===== 快捷键样式 ===== */
+kbd { background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.2); border-radius:4px; padding:2px 7px; font-size:0.78rem; font-family:"Cascadia Code",monospace; }
+
+/* ===== 摄像头拖拽手柄 ===== */
+.camera-handle { 
+  position: absolute; top: 0; left: 0; right: 0; height: 28px;
+  background: rgba(0,0,0,0.5); cursor: move; z-index: 3;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.7rem; color: rgba(255,255,255,0.7); user-select: none;
+}
+.camera-resize-handle {
+  position: absolute; bottom: 0; right: 0;
+  width: 20px; height: 20px; cursor: nwse-resize; z-index: 3;
+  background: linear-gradient(135deg, transparent 50%, rgba(0,229,255,0.5) 50%);
+  border-radius: 0 0 16px 0;
+}
+
+/* ===== AWAKE 头像状态 ===== */
+.avatar-wrapper.awake {
+  box-shadow: 0 0 40px rgba(124, 77, 255, 0.5), 0 0 80px rgba(0, 229, 255, 0.3), 0 0 120px rgba(124, 77, 255, 0.2);
+  animation: awakeGlow 0.6s ease-in-out infinite alternate;
+}
+@keyframes awakeGlow {
+  from { box-shadow: 0 0 30px rgba(124, 77, 255, 0.4), 0 0 60px rgba(0, 229, 255, 0.2); }
+  to { box-shadow: 0 0 50px rgba(124, 77, 255, 0.7), 0 0 100px rgba(0, 229, 255, 0.4), 0 0 150px rgba(124, 77, 255, 0.3); }
+}
+
+/* ===== 响应式设计 ===== */
+@media (max-width: 480px) {
+  .header-area h1 { font-size: 1.3rem; }
+  .header-area { padding-top: 12px; }
+  .avatar-wrapper { width: 140px; height: 140px; }
+  .message-bubble { max-width: 85%; font-size: 0.85rem; }
+  .mic-btn { width: 48px; height: 48px; }
+  .ctrl-btn { width: 40px; height: 40px; }
+  .camera-section { right: 8px; top: auto; bottom: 8px; left: auto; }
+  .camera-container { width: 180px; height: 180px; }
+  .mobile-access-card {
+    grid-template-columns: 1fr;
+    margin-bottom: 8px;
+  }
+  .mobile-copy-btn {
+    width: 100%;
+  }
+}
+
+@media (min-width: 768px) {
+  .avatar-wrapper { width: 200px; height: 200px; }
+  .camera-container { width: 340px; height: 340px; }
+}
+
+/* ===== 减弱动画偏好 ===== */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+.tool-result {
+  background: rgba(0, 229, 255, 0.08);
+  border: 1px solid rgba(0, 229, 255, 0.2);
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+.weather-card {
+  background: linear-gradient(135deg, rgba(0, 229, 255, 0.1), rgba(124, 77, 255, 0.08));
+}
+
+/* ===== 课堂实验台 ===== */
+.classroom-lab {
+  margin: 0 16px 10px;
+  padding: 12px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.075);
+  border: 1px solid rgba(255,255,255,0.14);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  flex-shrink: 0;
+}
+.lab-header {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  margin-bottom: 10px;
+}
+.lab-title { font-size: 0.92rem; font-weight: 700; color: #fff; }
+.lab-subtitle { font-size: 0.72rem; color: var(--text-secondary); margin-top: 2px; }
+.lab-toggle {
+  border: 1px solid rgba(0,229,255,0.35); background: rgba(0,229,255,0.1);
+  color: var(--accent-cyan); border-radius: 999px; padding: 6px 10px;
+  cursor: pointer; font-size: 0.75rem; white-space: nowrap;
+}
+.lab-tabs { display: flex; gap: 6px; margin-bottom: 10px; }
+.lab-tab {
+  flex: 1; border: 1px solid rgba(255,255,255,0.12); border-radius: 10px;
+  background: rgba(255,255,255,0.06); color: var(--text-secondary);
+  padding: 7px 6px; font-size: 0.74rem; cursor: pointer;
+}
+.lab-tab.active { color: #061021; background: linear-gradient(135deg, var(--accent-cyan), var(--success)); border-color: transparent; font-weight: 700; }
+.lab-content { display: none; }
+.lab-content.active { display: block; }
+.classroom-lab.collapsed .lab-tabs,
+.classroom-lab.collapsed .lab-content { display: none; }
+.magic-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.magic-card, .lab-card {
+  border: 1px solid rgba(255,255,255,0.12); border-radius: 12px;
+  background: rgba(5,10,35,0.42); padding: 10px; min-width: 0;
+}
+.magic-card strong, .lab-card strong { display: block; color: #fff; font-size: 0.78rem; margin-bottom: 5px; }
+.magic-card span, .lab-card p, .lab-card li { color: var(--text-secondary); font-size: 0.74rem; line-height: 1.45; }
+.lab-card ul { margin-left: 16px; }
+.lab-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+.lab-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.lab-chip {
+  border: 1px solid rgba(255,255,255,0.16); background: rgba(255,255,255,0.07);
+  color: var(--text-primary); border-radius: 999px; padding: 7px 10px;
+  cursor: pointer; font-size: 0.74rem;
+}
+.lab-chip:hover { border-color: rgba(0,229,255,0.45); color: var(--accent-cyan); }
+.voice-wave {
+  display: flex; align-items: end; gap: 4px; height: 42px; padding: 8px;
+  border-radius: 10px; background: rgba(0,0,0,0.22); overflow: hidden;
+}
+.voice-wave i {
+  flex: 1; min-width: 4px; border-radius: 999px;
+  background: linear-gradient(180deg, var(--accent-cyan), var(--accent-purple));
+  height: 18px; animation: waveBounce 1.1s ease-in-out infinite;
+}
+.voice-wave i:nth-child(2n) { animation-delay: .15s; }
+.voice-wave i:nth-child(3n) { animation-delay: .3s; }
+@keyframes waveBounce {
+  0%, 100% { height: 12px; opacity: .55; }
+  50% { height: 34px; opacity: 1; }
+}
+.wake-demo-state {
+  border-radius: 12px; padding: 10px; text-align: center; font-weight: 700;
+  color: #07111f; background: linear-gradient(135deg, #9fa8da, #e8eaf6);
+}
+.wake-demo-state.awake { background: linear-gradient(135deg, var(--accent-cyan), var(--success)); }
+.privacy-guardian { border-color: rgba(255,193,7,0.32); background: rgba(255,193,7,0.08); }
+.hallucination-guard { border-color: rgba(255,82,82,0.28); background: rgba(255,82,82,0.08); }
+@media (max-width: 560px) {
+  .magic-grid, .lab-row { grid-template-columns: 1fr; }
+  .classroom-lab { max-height: 34vh; overflow-y: auto; }
+}
+</style>
+</head>
+<body>
+
+<!-- 星空背景 -->
+<div class="starfield">
+  <div class="layer layer-1"></div>
+  <div class="layer layer-2"></div>
+  <div class="layer layer-3"></div>
+</div>
+
+<!-- file:// 协议检测横幅 -->
+  <div class="protocol-banner" id="protocolBanner" style="display:none;">
+  <span>⚠️ 当前以本地文件模式运行，权限无法持久保存。建议双击「启动小锋.bat」获得最佳体验</span>
+  <button id="closeProtocolBanner" style="background:none;border:none;color:inherit;cursor:pointer;font-size:1.1rem;margin-left:12px;">✕</button>
+</div>
+
+<div class="secure-media-banner" id="secureMediaBanner">
+  手机独立使用麦克风和摄像头时，请用 HTTPS 公网链接打开。普通 http 局域网地址在手机上会被浏览器禁止调用麦克风和摄像头。
+</div>
+
+<!-- Toast 通知容器 -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- 设置面板遮罩 -->
+<div class="settings-overlay" id="settingsOverlay"></div>
+
+<!-- 设置面板侧边栏 -->
+<div class="settings-panel" id="settingsPanel">
+  <div class="settings-header">
+    <h2>⚙️ API 设置</h2>
+    <button class="close-settings" id="closeSettingsBtn">✕</button>
+  </div>
+  <div class="settings-body">
+    <div class="settings-tabs">
+      <button class="settings-tab active" data-tab="tab-api">API 配置</button>
+      <button class="settings-tab" data-tab="tab-tts">语音合成</button>
+      <button class="settings-tab" data-tab="tab-chat">对话设置</button>
+      <button class="settings-tab" data-tab="tab-keys">快捷键</button>
+    </div>
+    <!-- API 配置标签页 -->
+    <div class="settings-tab-content active" id="tab-api">
+      <div class="field-group">
+        <label>服务商预设</label>
+        <select id="providerPreset" style="width:100%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:10px 14px;color:var(--text-primary);font-size:0.88rem;outline:none;font-family:inherit;cursor:pointer;">
+          <option value="">-- 选择服务商自动填充 --</option>
+          <option value="volcengine">火山引擎（豆包）</option>
+          <option value="deepseek">DeepSeek</option>
+          <option value="openai">OpenAI</option>
+          <option value="qwen">通义千问</option>
+          <option value="zhipu">智谱 AI</option>
+          <option value="moonshot">Moonshot（月之暗面）</option>
+          <option value="siliconflow">SiliconFlow</option>
+          <option value="custom">自定义</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label>API 接口地址</label>
+        <input type="url" id="apiEndpoint" placeholder="选择服务商后自动填充，或手动输入">
+      </div>
+      <div class="field-group">
+        <label>API Key</label>
+        <input type="password" id="apiKey" placeholder="粘贴你的 API Key">
+      </div>
+      <div class="field-group">
+        <label>模型名称</label>
+        <input type="text" id="modelName" placeholder="选择服务商后自动填充，或手动输入">
+      </div>
+      <button class="test-connection-btn" id="testConnectionBtn">🔗 测试连接</button>
+      <div id="connectionStatus" class="connection-status"></div>
+      <button class="save-settings-btn" id="saveSettingsBtn">💾 保存设置</button>
+      <p class="settings-hint">💡 先选择服务商自动填充地址，再粘贴 API Key 即可。<br>所有服务商均兼容 OpenAI 格式，设置保存在浏览器本地。</p>
+    </div>
+    <!-- 语音合成标签页 -->
+    <div class="settings-tab-content" id="tab-tts">
+      <div class="field-group">
+        <label>音色</label>
+        <select id="ttsVoice" style="width:100%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:10px 14px;color:var(--text-primary);font-size:0.88rem;outline:none;font-family:inherit;cursor:pointer;">
+          <option value="">浏览器默认</option>
+        </select>
+      </div>
+      <button class="test-connection-btn" id="ttsTestBtn">🔊 试听</button>
+      <div class="field-group">
+        <label>语速: <span id="ttsRateVal" style="color:var(--accent-cyan);">1.0x</span></label>
+        <input type="range" id="ttsRate" min="0.5" max="2" step="0.1" value="1" style="width:100%;">
+      </div>
+      <div class="field-group">
+        <label>语调: <span id="ttsPitchVal" style="color:var(--accent-cyan);">1.0</span></label>
+        <input type="range" id="ttsPitch" min="0.5" max="2" step="0.1" value="1" style="width:100%;">
+      </div>
+      <div class="field-group">
+        <label>方言/口音</label>
+        <select id="ttsDialect" style="width:100%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:10px 14px;color:var(--text-primary);font-size:0.88rem;outline:none;font-family:inherit;cursor:pointer;">
+          <option value="">普通话</option>
+          <option value="zh-HK">粤语</option>
+          <option value="zh-CN-sichuan">四川话（近似）</option>
+          <option value="en-US">英语</option>
+          <option value="ja-JP">日语</option>
+        </select>
+      </div>
+    </div>
+    <!-- 对话设置标签页 -->
+    <div class="settings-tab-content" id="tab-chat">
+      <div class="field-group">
+        <label>系统提示词</label>
+        <textarea id="systemPrompt" rows="4" placeholder="你是一个可爱、聪明的AI助手，名叫小锋..." style="width:100%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:10px 14px;color:var(--text-primary);font-size:0.88rem;outline:none;font-family:inherit;resize:vertical;">你是一个可爱、聪明的AI助手，名叫小锋，回答简洁友善。</textarea>
+      </div>
+      <div class="field-group">
+        <label>最大对话轮数</label>
+        <input type="number" id="maxRounds" min="1" max="100" value="20" style="width:100%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:10px 14px;color:var(--text-primary);font-size:0.88rem;outline:none;font-family:inherit;">
+      </div>
+      <button class="save-settings-btn" id="clearChatBtn" style="background:linear-gradient(135deg, #ff5252, #ff1744);">🗑️ 清空全部对话</button>
+    </div>
+    <!-- 快捷键标签页 -->
+    <div class="settings-tab-content" id="tab-keys">
+      <div style="line-height:2.2;font-size:0.88rem;">
+        <div><kbd>Ctrl + Enter</kbd> 发送消息</div>
+        <div><kbd>Ctrl + M</kbd> 开始/停止麦克风录音</div>
+        <div><kbd>Ctrl + Shift + C</kbd> 开启/关闭摄像头</div>
+        <div><kbd>Esc</kbd> 关闭设置面板</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 主应用容器 -->
+<div class="app-container">
+
+  <!-- 头部标题 -->
+  <div class="header-area">
+    <h1>✨ 小锋超级助手</h1>
+    <div class="subtitle">语音 · 视觉 · 多模态</div>
+  </div>
+
+  <section class="mobile-access-card" id="mobileAccessCard" hidden>
+    <div>
+      <div class="mobile-access-title">手机访问</div>
+      <div class="mobile-access-url" id="mobileAccessUrl">正在获取手机访问地址...</div>
+      <div class="mobile-access-note">手机和电脑连接同一个 Wi-Fi 后，在手机浏览器打开这个地址。</div>
+    </div>
+    <button class="mobile-copy-btn" id="copyMobileUrlBtn" type="button">复制地址</button>
+  </section>
+
+  <!-- 头像显示区 -->
+  <div class="avatar-area">
+    <div class="avatar-wrapper" id="avatarWrapper">
+      <canvas id="avatarCanvas" width="400" height="400"></canvas>
+    </div>
+  </div>
+  <!-- 状态指示器 + 唤醒开关 -->
+  <div style="display:flex;align-items:center;justify-content:center;gap:10px;flex-shrink:0;">
+    <div class="status-indicator" id="statusIndicator">
+      <span class="status-dot" id="statusDot"></span>
+      <span class="status-text" id="statusText">就绪</span>
+    </div>
+    <button class="wake-toggle" id="wakeToggle" title="语音唤醒">
+      <span class="wake-toggle-pill"></span>
+    </button>
+  </div>
+
+  <!-- 课堂实验台 -->
+  <section class="classroom-lab glass-panel" id="classroomLab">
+    <div class="lab-header">
+      <div>
+        <div class="lab-title">🎙️ AI语音助手魔法实验台</div>
+        <div class="lab-subtitle">把课件里的“听、懂、说”变成可操作演示</div>
+      </div>
+      <button class="lab-toggle" id="classroomLabToggle">收起</button>
+    </div>
+    <div class="lab-tabs">
+      <button class="lab-tab active" data-lab-tab="magicLab">魔法揭秘</button>
+      <button class="lab-tab" data-lab-tab="trainerLab">AI训练师</button>
+      <button class="lab-tab" data-lab-tab="challengeLab">挑战赛</button>
+    </div>
+
+    <div class="lab-content active" id="magicLab">
+      <div class="magic-grid">
+        <div class="magic-card">
+          <strong>1. 听见声 ASR</strong>
+          <span id="magicAsrText">等你输入一句话，我会显示“听见了什么”。</span>
+        </div>
+        <div class="magic-card">
+          <strong>2. 懂意思 NLP</strong>
+          <span id="magicNlpText">我会判断这是聊天、音乐、天气，还是安全提醒。</span>
+        </div>
+        <div class="magic-card">
+          <strong>3. 会回答 TTS</strong>
+          <span id="magicTtsText">回答后，我会把文字读出来，像有嘴巴一样。</span>
+        </div>
+      </div>
+      <div class="lab-row">
+        <div class="lab-card" id="voiceWaveDemo">
+          <strong>声音波形演示</strong>
+          <div class="voice-wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          <p>声音像波浪，麦克风把波浪变成数字，AI再把数字变成文字。</p>
+        </div>
+        <div class="lab-card" id="wakeWordDemo">
+          <strong>唤醒词演示</strong>
+          <div class="wake-demo-state" id="wakeDemoState">小锋正在睡觉</div>
+          <div class="lab-actions">
+            <button class="lab-chip" id="wakeDemoSleepBtn">睡觉</button>
+            <button class="lab-chip" id="wakeDemoAwakeBtn">你好小锋</button>
+          </div>
+        </div>
+      </div>
+      <div class="lab-row">
+        <div class="lab-card privacy-guardian" id="privacyGuardian">
+          <strong>隐私小卫士</strong>
+          <p id="privacyGuardianText">不要告诉AI真实姓名、住址、学校、验证码、密码。</p>
+        </div>
+        <div class="lab-card hallucination-guard" id="hallucinationGuard">
+          <strong>AI幻觉提醒</strong>
+          <p id="hallucinationGuardText">遇到重要事实，小锋会提醒你核实来源。</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="lab-content" id="trainerLab">
+      <div class="lab-card">
+        <strong>变身AI训练师：一键给小锋换人设</strong>
+        <p>选择一个课堂角色，小锋会把它写进对话设置里。</p>
+        <div class="lab-actions" id="trainerRoleBtns">
+          <button class="lab-chip" data-role="math">严厉幽默数学老师</button>
+          <button class="lab-chip" data-role="story">会讲故事的伙伴</button>
+          <button class="lab-chip" data-role="english">英语口语陪练</button>
+          <button class="lab-chip" data-role="homework">作业提醒助手</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="lab-content" id="challengeLab">
+      <div class="lab-card" id="challengeArena">
+        <strong>谁能难倒AI？课堂挑战赛</strong>
+        <p>点击题目会自动填入聊天框，适合老师现场演示AI的强项和弱点。</p>
+        <div class="lab-actions">
+          <button class="lab-chip challenge-btn" data-prompt="北京天安门在哪里？">基础题</button>
+          <button class="lab-chip challenge-btn" data-prompt="25×4等于多少？请说出计算过程。">计算题</button>
+          <button class="lab-chip challenge-btn" data-prompt="为什么我妈妈今天生气了？">陷阱题</button>
+          <button class="lab-chip challenge-btn" data-prompt="帮我写一首关于人工智能的藏头诗。">创意题</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 聊天消息区域 -->
+  <div class="chat-area" id="chatArea"></div>
+
+  <!-- 底部控制栏 -->
+  <div class="control-bar glass-panel" style="border-radius: 20px 20px 0 0;">
+    <div class="interim-text" id="interimText"></div>
+    <div class="camera-controls" id="cameraControls">
+      <button class="ctrl-btn analyze-btn" id="analyzeBtn" title="拍照分析">
+        <svg viewBox="0 0 24 24"><path d="M12 15.2a3.2 3.2 0 100-6.4 3.2 3.2 0 000 6.4z"/><path d="M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>
+        拍照分析
+      </button>
+      <button class="ctrl-btn auto-analyze-btn" id="autoAnalyzeBtn" title="自动分析">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+        自动分析
+      </button>
+    </div>
+    <div class="control-row">
+      <button class="ctrl-btn gear-btn" id="gearBtn" title="设置">
+        <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.49.49 0 00-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 00-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.49.49 0 00-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6A3.6 3.6 0 1112 8.4a3.6 3.6 0 010 7.2z"/></svg>
+      </button>
+      <button class="ctrl-btn camera-btn" id="cameraBtn" title="摄像头">
+        <svg viewBox="0 0 24 24"><path d="M18 10.48V6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-4.48l4 3.98v-11l-4 3.98zm-2-.79V18H4V6h12v3.69z"/></svg>
+      </button>
+      <div class="input-wrapper">
+        <textarea id="textInput" rows="1" placeholder="输入消息，或点击🎤语音对话..."></textarea>
+      </div>
+      <button class="ctrl-btn send-btn" id="sendBtn" title="发送">
+        <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+      </button>
+      <button class="ctrl-btn mic-btn" id="micBtn" title="语音输入">
+        <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V5zm6 6c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- 摄像头浮动面板（固定在右侧） -->
+<div class="camera-section" id="cameraSection">
+  <div class="camera-container">
+    <div class="camera-handle" id="cameraDragHandle">⋮⋮ 摄像头面板 ⋮⋮</div>
+    <button class="camera-close-btn" id="cameraCloseBtn" title="关闭摄像头">✕</button>
+    <video id="cameraVideo" autoplay playsinline muted></video>
+    <div class="camera-overlay" id="cameraOverlay"></div>
+    <div class="camera-resize-handle" id="cameraResizeHandle"></div>
+  </div>
+</div>
+
+<!-- 隐藏的辅助画布，用于拍照截图 -->
+<canvas id="captureCanvas" style="display:none;"></canvas>
+
+<script>
+/* ================================================================
+ *  小锋超级助手 - 全部 JavaScript 逻辑
+ *  包含：配置管理、语音识别、语音合成、摄像头管理、
+ *       API调用、视觉识别、聊天持久化、头像动画系统
+ * ================================================================ */
+
+/* ===== 配置管理类 - 处理 localStorage 读写 ===== */
+class ConfigManager {
+  constructor() {
+    this.STORAGE_KEY = 'xiaofeng_config';
+    this.config = this.load();
+  }
+
+  /* 从 localStorage 加载配置 */
+  load() {
+    try {
+      const saved = localStorage.getItem(this.STORAGE_KEY);
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      console.warn('加载配置失败:', e);
+    }
+    return {
+      apiEndpoint: '',
+      apiKey: '',
+      modelName: 'gpt-4o',
+      systemPrompt: '你是一个可爱、聪明的AI助手，名叫小锋，回答简洁友善。',
+      maxRounds: 20
+    };
+  }
+
+  /* 保存配置到 localStorage */
+  save(config) {
+    this.config = { ...this.config, ...config };
+    try {
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.config));
+    } catch (e) {
+      console.warn('保存配置失败:', e);
+    }
+  }
+
+  /* 检查是否已配置 API */
+  isConfigured() {
+    return !!(this.config.apiEndpoint && this.config.apiKey);
+  }
+}
+
+class ToolManager {
+  constructor() {
+    this.tools = [];
+    this._registerBuiltinTools();
+  }
+
+  _registerBuiltinTools() {
+    this.tools.push({
+      name: 'datetime',
+      match: (text) => {
+        const t = text.toLowerCase().replace(/[，。！？\s]/g, '');
+        const dateKw = ['今天几号','今天日期','几月几号','星期几','周几','什么日期','今天是','今天是几号','今天多少号'];
+        const timeKw = ['几点','什么时间','现在时间','现在几点','当前时间','几点了','几时'];
+        if (dateKw.some(k => t.includes(k))) return 'date';
+        if (timeKw.some(k => t.includes(k))) return 'time';
+        return null;
+      },
+      execute: (text, subType) => {
+        const now = new Date();
+        const weekDays = ['日','一','二','三','四','五','六'];
+        if (subType === 'date') {
+          return `今天是${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日，星期${weekDays[now.getDay()]}。`;
+        }
+        const h = now.getHours();
+        const period = h < 6 ? '凌晨' : h < 12 ? '上午' : h < 14 ? '中午' : h < 18 ? '下午' : '晚上';
+        const h12 = h > 12 ? h - 12 : h === 0 ? 12 : h;
+        return `现在是${period}${h12}点${now.getMinutes()}分。`;
+      }
+    });
+
+    this.tools.push({
+      name: 'weather',
+      match: (text) => {
+        const t = text.toLowerCase().replace(/[，。！？\s]/g, '');
+        const kw = ['天气','气温','温度','下雨','下雪','刮风','冷不冷','热不热','穿什么'];
+        return kw.some(k => t.includes(k)) ? 'weather' : null;
+      },
+      execute: async (text) => {
+        const t = text.replace(/[，。！？\s]/g, '');
+        let city = '';
+        const cityPatterns = [
+          /(.+?)(?:的)?天气/, /(.+?)(?:的)?气温/, /(.+?)(?:的)?温度/,
+          /天气(?:怎么样|如何)(.+)?/, /气温(?:怎么样|如何)(.+)?/
+        ];
+        const notCityWords = ['今天','明天','后天','昨天','大后天','前天','这','那','现在','目前','当下','咱们','我们','你','我'];
+        for (const p of cityPatterns) {
+          const m = t.match(p);
+          if (m && m[1] && !notCityWords.includes(m[1])) { city = m[1]; break; }
+        }
+        if (!city) {
+          const located = await getUserCity();
+          if (located) {
+            city = located;
+          } else {
+            return '请告诉我您想查询哪个城市的天气，例如"北京天气"。';
+          }
+        }
+        const cityMap = {'北京':'Beijing','上海':'Shanghai','广州':'Guangzhou','深圳':'Shenzhen',
+          '杭州':'Hangzhou','成都':'Chengdu','武汉':'Wuhan','南京':'Nanjing','西安':'Xian',
+          '重庆':'Chongqing','天津':'Tianjin','苏州':'Suzhou','长沙':'Changsha','郑州':'Zhengzhou',
+          '青岛':'Qingdao','大连':'Dalian','厦门':'Xiamen','昆明':'Kunming','哈尔滨':'Harbin'};
+        const enCity = cityMap[city] || city;
+        try {
+          const resp = await fetch(`https://wttr.in/${encodeURIComponent(enCity)}?format=j1&lang=zh`);
+          if (!resp.ok) throw new Error('API error');
+          const data = await resp.json();
+          const cur = data.current_condition[0];
+          const weatherCNMap = {
+            'Clear':'晴','Sunny':'晴','Partly cloudy':'多云','Partly Cloudy':'多云',
+            'Cloudy':'阴','Overcast':'阴','Mist':'雾','Fog':'雾','Haze':'霾',
+            'Light rain':'小雨','Light Rain':'小雨','Light drizzle':'小雨','Light Drizzle':'小雨',
+            'Patchy light rain':'小到中雨','Patchy rain possible':'局部阵雨','Patchy rain nearby':'局部阵雨',
+            'Moderate rain':'中雨','Moderate Rain':'中雨','Moderate rain at times':'间歇性中雨',
+            'Heavy rain':'大雨','Heavy Rain':'大雨','Heavy rain at times':'间歇性大雨',
+            'Torrential rain':'暴雨','Light rain shower':'小阵雨','Moderate or heavy rain shower':'中到大阵雨',
+            'Thunderstorm':'雷阵雨','Thunder storm':'雷阵雨','Rain With Thunderstorm':'雷阵雨',
+            'Thundery outbreaks possible':'可能有雷暴','Patchy light rain with thunder':'小到中雨伴雷',
+            'Light snow':'小雪','Light Snow':'小雪','Moderate snow':'中雪','Moderate Snow':'中雪',
+            'Heavy snow':'大雪','Heavy Snow':'大雪','Blizzard':'暴风雪','Blowing snow':'风吹雪',
+            'Snow showers':'阵雪','Light snow showers':'小阵雪','Moderate or heavy snow showers':'中到大阵雪',
+            'Ice pellets':'冰粒','Light sleet':'小冰粒','Moderate or heavy sleet':'中到大冰粒',
+            'Freezing drizzle':'冻毛毛雨','Freezing fog':'冻雾','Light freezing rain':'小冻雨',
+            'Moderate or heavy freezing rain':'中到大冻雨'
+          };
+          const rawDesc = cur.weatherDesc[0].value.trim();
+          const desc = weatherCNMap[rawDesc] || rawDesc;
+          const temp = cur.temp_C;
+          const feels = cur.FeelsLikeC;
+          const wind = cur.windspeedKmph;
+          const humidity = cur.humidity;
+          return `${city}当前天气：${desc}，温度${temp}°C（体感${feels}°C），风速${wind}km/h，湿度${humidity}%。`;
+        } catch (e) {
+          return `天气查询失败，无法获取${city}的天气信息，请稍后再试。`;
+        }
+      }
+    });
+
+    this.tools.push({
+      name: 'music',
+      match: (text) => {
+        const t = text.toLowerCase().replace(/[，。！？\s]/g, '');
+        const stopKw = ['停止播放','暂停音乐','关闭音乐','停止音乐','别放了','不要放了','关掉音乐'];
+        if (stopKw.some(k => t.includes(k))) return 'stop';
+        const playPatterns = [/我想听(.+)/,/播放(.+)/,/来一首(.+)/,/放一首(.+)/,/听歌(.+)/,/放个(.+)/,/来点(.+)/];
+        for (const p of playPatterns) {
+          const m = t.match(p);
+          if (m && m[1] && m[1].length >= 2 && !['一下','一上','一下吧','看看','试试'].includes(m[1])) return 'play';
+        }
+        return null;
+      },
+      execute: async (text, subType) => {
+        if (subType === 'stop') {
+          stopMusicPlayer();
+          return '已停止播放音乐。';
+        }
+        const t = text.replace(/[，。！？]/g, '').replace(/[“”]/g, '"').replace(/[‘’]/g, "'");
+        const prefixes = ['我想听','播放','来一首','放一首','听歌','放个','来点'];
+        let song = '';
+        for (const p of prefixes) {
+          const idx = t.indexOf(p);
+          if (idx !== -1) {
+            song = t.substring(idx + p.length).trim();
+            break;
+          }
+        }
+        if (!song || song.length < 2) return null;
+        const request = parseMusicRequest(song);
+        const result = await playMusic(request);
+        if (result === 'stale') return '已切换到新的音乐请求。';
+        if (!result) return '音乐搜索失败，请稍后再试。';
+        return `正在为你播放：${result.displayName}`;
+      }
+    });
+  }
+
+  async handleTool(text) {
+    for (const tool of this.tools) {
+      const subType = tool.match(text);
+      if (subType) {
+        return { toolName: tool.name, subType, result: await tool.execute(text, subType) };
+      }
+    }
+    return null;
+  }
+}
+
+async function getUserCity() {
+  return new Promise((resolve) => {
+    if (!navigator.geolocation) { resolve(null); return; }
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const lat = pos.coords.latitude;
+          const lon = pos.coords.longitude;
+          const resp = await fetch(`https://wttr.in/${lat},${lon}?format=j1`);
+          const data = await resp.json();
+          const area = data.nearest_area && data.nearest_area[0];
+          if (area) {
+            const cityName = area.areaName && area.areaName[0] ? area.areaName[0].value : null;
+            resolve(cityName);
+          } else { resolve(null); }
+        } catch (e) { resolve(null); }
+      },
+      () => resolve(null),
+      { timeout: 5000 }
+    );
+  });
+}
+
+const toolManager = new ToolManager();
+
+function parseMusicRequest(input) {
+  let text = String(input || '').trim();
+  text = text.replace(/[“”]/g, '"').replace(/[‘’]/g, "'");
+  text = text.replace(/^["'《]+|["'》]+$/g, '').trim();
+  let artist = '';
+  let song = text;
+
+  const bracketMatch = text.match(/^(.+?)的?[《"'](.+?)[》"']$/);
+  if (bracketMatch) {
+    artist = bracketMatch[1].replace(/的$/, '').trim();
+    song = bracketMatch[2].trim();
+  } else {
+    const deMatch = text.match(/^(.+?)的(.+)$/);
+    if (deMatch && deMatch[1].length >= 2 && deMatch[2].length >= 1) {
+      artist = deMatch[1].trim();
+      song = deMatch[2].replace(/^["'《]+|["'》]+$/g, '').trim();
+    }
+  }
+
+  return { song, artist, raw: text };
+}
+
+async function searchNetEaseSong(request) {
+  try {
+    const songName = typeof request === 'string' ? request : request.song;
+    const artistName = typeof request === 'string' ? '' : (request.artist || '');
+    const resp = await fetch(`/api/song?song=${encodeURIComponent(songName)}&artist=${encodeURIComponent(artistName)}`);
+    if (!resp.ok) return null;
+    const data = await resp.json();
+    if (!(data.code === 200 && data.song)) return null;
+    return data.song;
+  } catch (e) {
+    console.warn('搜索歌曲失败:', e);
+    return null;
+  }
+}
+
+let musicPlayerEl = null;
+let musicDragState = null;
+let musicRequestSeq = 0;
+let activeMusicAudio = null;
+
+function escapeHtml(text) {
+  return String(text).replace(/[&<>"']/g, ch => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  }[ch]));
+}
+
+async function playMusic(request) {
+  const requestId = ++musicRequestSeq;
+  if (activeMusicAudio) {
+    activeMusicAudio.pause();
+    activeMusicAudio.removeAttribute('src');
+    activeMusicAudio.load();
+    activeMusicAudio = null;
+  }
+  if (!musicPlayerEl) {
+    musicPlayerEl = document.createElement('div');
+    musicPlayerEl.id = 'musicPlayerWidget';
+    musicPlayerEl.style.cssText = 'position:fixed;top:80px;left:50%;margin-left:-175px;z-index:200;border-radius:16px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.5);border:1px solid rgba(0,229,255,0.3);width:350px;background:rgba(17,22,64,0.97);backdrop-filter:blur(20px);';
+    document.body.appendChild(musicPlayerEl);
+    musicPlayerEl.addEventListener('mousedown', onMusicDragStart);
+    musicPlayerEl.addEventListener('touchstart', onMusicDragStart, { passive: false });
+  }
+  musicPlayerEl.innerHTML = '<div style="padding:16px;text-align:center;color:#9fa8da;font-size:0.88rem;">🔍 正在搜索音乐...</div>';
+  musicPlayerEl.style.display = 'block';
+  const songInfo = await searchNetEaseSong(request);
+  if (requestId !== musicRequestSeq) return 'stale';
+  if (!songInfo) {
+    musicPlayerEl.style.display = 'none';
+    return false;
+  }
+  const displayName = songInfo.artist ? `${songInfo.name} - ${songInfo.artist}` : songInfo.name;
+  const safeDisplayName = escapeHtml(displayName);
+  const audioSrc = `/api/stream?id=${encodeURIComponent(songInfo.id)}`;
+  musicPlayerEl.innerHTML = `
+    <div id="musicDragHandle" style="padding:10px 16px;cursor:move;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,rgba(0,229,255,0.15),rgba(124,77,255,0.1));border-bottom:1px solid rgba(0,229,255,0.2);">
+      <span style="color:#e8eaf6;font-size:0.88rem;font-weight:500;user-select:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:8px;">🎵 ${safeDisplayName}</span>
+      <button onclick="stopMusicPlayer()" style="background:none;border:none;color:#ff5252;cursor:pointer;font-size:18px;padding:2px 6px;line-height:1;">✕</button>
+    </div>
+    <div style="padding:14px 16px 16px;">
+      <audio id="musicAudio" controls autoplay preload="auto" style="width:100%;" src="${audioSrc}"></audio>
+      <div id="musicHint" style="margin-top:8px;color:#9fa8da;font-size:0.78rem;text-align:center;">如果浏览器拦截自动播放，请点击播放按钮</div>
+    </div>
+  `;
+  const audio = document.getElementById('musicAudio');
+  const hint = document.getElementById('musicHint');
+  if (audio) {
+    activeMusicAudio = audio;
+    audio.play().then(() => {
+      if (hint) hint.textContent = '正在播放';
+    }).catch(() => {
+      if (hint) hint.textContent = '请点击播放按钮开始播放';
+    });
+    audio.addEventListener('error', () => {
+      if (hint) hint.textContent = '这首歌暂时无法播放，请换一首试试';
+    });
+  }
+  return { displayName };
+}
+
+function stopMusicPlayer() {
+  musicRequestSeq++;
+  if (activeMusicAudio) {
+    activeMusicAudio.pause();
+    activeMusicAudio.removeAttribute('src');
+    activeMusicAudio.load();
+    activeMusicAudio = null;
+  }
+  if (musicPlayerEl) {
+    musicPlayerEl.style.display = 'none';
+    musicPlayerEl.innerHTML = '';
+  }
+}
+
+function onMusicDragStart(e) {
+  if (e.target.tagName === 'BUTTON' || e.target.tagName === 'IFRAME' || e.target.tagName === 'AUDIO') return;
+  e.preventDefault();
+  const touch = e.touches ? e.touches[0] : e;
+  const rect = musicPlayerEl.getBoundingClientRect();
+  musicDragState = {
+    startX: touch.clientX,
+    startY: touch.clientY,
+    origLeft: rect.left,
+    origTop: rect.top
+  };
+  musicPlayerEl.style.marginLeft = '0';
+  musicPlayerEl.style.left = rect.left + 'px';
+  musicPlayerEl.style.top = rect.top + 'px';
+  document.addEventListener('mousemove', onMusicDragMove);
+  document.addEventListener('mouseup', onMusicDragEnd);
+  document.addEventListener('touchmove', onMusicDragMove, { passive: false });
+  document.addEventListener('touchend', onMusicDragEnd);
+}
+
+function onMusicDragMove(e) {
+  if (!musicDragState) return;
+  e.preventDefault();
+  const touch = e.touches ? e.touches[0] : e;
+  const dx = touch.clientX - musicDragState.startX;
+  const dy = touch.clientY - musicDragState.startY;
+  let newLeft = musicDragState.origLeft + dx;
+  let newTop = musicDragState.origTop + dy;
+  newLeft = Math.max(0, Math.min(window.innerWidth - 350, newLeft));
+  newTop = Math.max(0, Math.min(window.innerHeight - 120, newTop));
+  musicPlayerEl.style.left = newLeft + 'px';
+  musicPlayerEl.style.top = newTop + 'px';
+}
+
+function onMusicDragEnd() {
+  musicDragState = null;
+  document.removeEventListener('mousemove', onMusicDragMove);
+  document.removeEventListener('mouseup', onMusicDragEnd);
+  document.removeEventListener('touchmove', onMusicDragMove);
+  document.removeEventListener('touchend', onMusicDragEnd);
+}
+
+/* ===== 语音识别管理类 - 封装 Web Speech API ===== */
+class SpeechManager {
+  constructor(onInterim, onFinal, onError) {
+    this.onInterim = onInterim;
+    this.onFinal = onFinal;
+    this.onError = onError;
+    this.recognition = null;
+    this.isRecording = false;
+
+    /* 检测浏览器是否支持语音识别 */
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      this.recognition = new SpeechRecognition();
+      this.recognition.continuous = true;
+      this.recognition.interimResults = true;
+      this.recognition.lang = 'zh-CN';
+
+      this.recognition.onresult = (event) => {
+        let interimTranscript = '';
+        let finalTranscript = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            finalTranscript += transcript;
+          } else {
+            interimTranscript += transcript;
+          }
+        }
+        if (interimTranscript) this.onInterim(interimTranscript);
+        if (finalTranscript) {
+          this.onInterim('');
+          this.onFinal(finalTranscript);
+        }
+      };
+
+      this.recognition.onerror = (event) => {
+        console.warn('语音识别错误:', event.error);
+        if (event.error === 'aborted') {
+          return;
+        }
+        if (event.error === 'no-speech') {
+          return;
+        }
+        this.isRecording = false;
+        if (event.error === 'not-allowed') {
+          this.onError('麦克风权限被拒绝。请在浏览器地址栏左侧点击锁图标 → 网站设置 → 麦克风 → 允许');
+        } else if (event.error === 'network') {
+          this.onError('网络错误，请检查网络连接');
+        } else {
+          this.onError('语音识别出错: ' + event.error);
+        }
+      };
+
+      this.recognition.onend = () => {
+        if (this.isRecording) {
+          try {
+            this.recognition.start();
+          } catch (e) {
+            setTimeout(() => {
+              if (this.isRecording) {
+                try { this.recognition.start(); } catch(e2) {}
+              }
+            }, 300);
+          }
+        } else {
+          this.onInterim('');
+          updateMicButton(false);
+          setAvatarState('idle');
+        }
+      };
+    }
+  }
+
+  /* 开始录音 */
+  start() {
+    if (!this.recognition) {
+      this.onError('您的浏览器不支持语音识别，请使用 Chrome 或 Edge');
+      return;
+    }
+    /* 恢复可能被暂停的 AudioContext */
+    if (vadAudioCtx && vadAudioCtx.state === 'suspended') {
+      vadAudioCtx.resume();
+    }
+    try {
+      this.recognition.start();
+      this.isRecording = true;
+      micPermissionGranted = true;
+      updateMicButton(true);
+      setAvatarState('listening');
+    } catch (e) {
+      if (e.name !== 'InvalidStateError') {
+        this.onError('无法启动语音识别: ' + e.message);
+      }
+    }
+  }
+
+  /* 停止录音 */
+  stop() {
+    if (this.recognition && this.isRecording) {
+      this.isRecording = false;
+      try {
+        this.recognition.stop();
+      } catch (e) {}
+      updateMicButton(false);
+      setAvatarState('idle');
+    }
+  }
+}
+
+/* ===== 语音合成管理类 - 封装 SpeechSynthesis ===== */
+class TTSManager {
+  constructor() {
+    this.synth = window.speechSynthesis;
+    this.isSpeaking = false;
+    this.currentUtterance = null;
+    this.voice = null;
+    this.rate = 1;
+    this.pitch = 1;
+    this.keepAliveTimer = null;
+    this.wasCancelled = false;
+  }
+
+  speak(text, onEnd) {
+    this.cancel();
+    this.wasCancelled = false;
+    if (!this.synth) return;
+
+    if (typeof pauseAllRecognition === 'function') pauseAllRecognition();
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    if (this.voice) utterance.voice = this.voice;
+    utterance.rate = this.rate;
+    utterance.pitch = this.pitch;
+    utterance.lang = this.voice ? this.voice.lang : 'zh-CN';
+
+    utterance.onstart = () => {
+      this.isSpeaking = true;
+      setAvatarState('speaking');
+      this.keepAliveTimer = setInterval(() => {
+        this.synth.resume();
+      }, 10000);
+    };
+
+    const finishSpeaking = () => {
+      this.isSpeaking = false;
+      if (this.keepAliveTimer) {
+        clearInterval(this.keepAliveTimer);
+        this.keepAliveTimer = null;
+      }
+      setAvatarState('idle');
+      if (!this.wasCancelled && typeof resumeAllRecognition === 'function') resumeAllRecognition();
+      this.wasCancelled = false;
+    };
+
+    utterance.onend = () => {
+      finishSpeaking();
+      if (onEnd) onEnd();
+    };
+
+    utterance.onerror = () => {
+      finishSpeaking();
+    };
+
+    this.currentUtterance = utterance;
+    this.synth.speak(utterance);
+  }
+
+  cancel() {
+    this.wasCancelled = true;
+    if (this.keepAliveTimer) {
+      clearInterval(this.keepAliveTimer);
+      this.keepAliveTimer = null;
+    }
+    if (this.synth) {
+      this.synth.cancel();
+    }
+    this.isSpeaking = false;
+    this.currentUtterance = null;
+  }
+}
+
+/* ===== 摄像头管理类 - 封装 getUserMedia ===== */
+function checkSecureMediaAccess() {
+  const isLocalComputer = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+  if (!window.isSecureContext && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+    const message = '手机浏览器要使用麦克风和摄像头，必须通过 HTTPS 打开。请使用“手机端HTTPS发布包”发布后的公网链接。';
+    const banner = document.getElementById('secureMediaBanner');
+    if (banner) banner.style.display = 'block';
+    showToast(message, 'error');
+    return false;
+  }
+  return true;
+}
+
+class CameraManager {
+  constructor() {
+    this.stream = null;
+    this.videoEl = document.getElementById('cameraVideo');
+    this.captureCanvas = document.getElementById('captureCanvas');
+    this.isCameraOn = false;
+    this.autoAnalyzeTimer = null;
+  }
+
+  /* 打开摄像头 */
+  async open() {
+    if (!checkSecureMediaAccess()) return;
+    try {
+      /* 复用已有流 */
+      if (this.stream && this.stream.active) {
+        this.videoEl.srcObject = this.stream;
+        document.getElementById('cameraSection').classList.add('visible');
+        this.isCameraOn = true;
+        document.getElementById('cameraBtn').classList.add('active');
+        document.getElementById('cameraControls').classList.add('visible');
+        setAvatarState('idle');
+        showToast('摄像头已开启', 'success');
+        return;
+      }
+      this.stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment', width: { ideal: 640 }, height: { ideal: 480 } }
+      });
+      this.videoEl.srcObject = this.stream;
+      document.getElementById('cameraSection').classList.add('visible');
+      this.isCameraOn = true;
+      cameraPermissionGranted = true;
+      document.getElementById('cameraBtn').classList.add('active');
+      document.getElementById('cameraControls').classList.add('visible');
+      setAvatarState('idle');
+      showToast('摄像头已开启', 'success');
+    } catch (e) {
+      if (e.name === 'NotAllowedError') {
+        showToast('摄像头权限被拒绝。请在浏览器地址栏左侧点击锁图标 → 网站设置 → 摄像头 → 允许', 'error');
+      } else {
+        showToast('无法打开摄像头: ' + e.message, 'error');
+      }
+    }
+  }
+
+  /* 关闭摄像头（软关闭：隐藏画面但不销毁流，以便复用） */
+  close() {
+    this.videoEl.srcObject = null;
+    document.getElementById('cameraSection').classList.remove('visible');
+    document.getElementById('cameraOverlay').style.display = 'none';
+    this.isCameraOn = false;
+    document.getElementById('cameraBtn').classList.remove('active');
+    document.getElementById('cameraControls').classList.remove('visible');
+    document.getElementById('autoAnalyzeBtn').classList.remove('active');
+    this.stopAutoAnalyze();
+    showToast('摄像头已关闭');
+  }
+
+  /* 硬关闭：真正停止所有轨道，仅在页面卸载时调用 */
+  hardClose() {
+    if (this.stream) {
+      this.stream.getTracks().forEach(t => t.stop());
+      this.stream = null;
+    }
+    this.isCameraOn = false;
+  }
+
+  /* 截取当前帧并压缩为 JPEG base64 */
+  captureFrame() {
+    if (!this.isCameraOn) return null;
+    const video = this.videoEl;
+    const canvas = this.captureCanvas;
+    const maxPx = 512;
+    let w = video.videoWidth;
+    let h = video.videoHeight;
+    /* 按比例缩放到最大 512px */
+    if (w > maxPx || h > maxPx) {
+      const ratio = Math.min(maxPx / w, maxPx / h);
+      w = Math.round(w * ratio);
+      h = Math.round(h * ratio);
+    }
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, w, h);
+    return canvas.toDataURL('image/jpeg', 0.6);
+  }
+
+  /* 开启自动分析（每5秒） */
+  startAutoAnalyze() {
+    this.stopAutoAnalyze();
+    this.autoAnalyzeTimer = setInterval(() => {
+      if (this.isCameraOn && !isApiBusy) {
+        analyzePhoto();
+      }
+    }, 5000);
+  }
+
+  /* 停止自动分析 */
+  stopAutoAnalyze() {
+    if (this.autoAnalyzeTimer) {
+      clearInterval(this.autoAnalyzeTimer);
+      this.autoAnalyzeTimer = null;
+    }
+  }
+}
+
+/* ===== 全局变量与实例化 ===== */
+const configManager = new ConfigManager();
+const ttsManager = new TTSManager();
+const cameraManager = new CameraManager();
+let speechManager = null;
+let isApiBusy = false;
+let conversationHistory = [];
+let currentAiMessageEl = null;
+let currentAiText = '';
+let avatarState = 'idle';
+let avatarAnimFrame = null;
+let micPermissionGranted = false;
+let cameraPermissionGranted = false;
+let persistentMicStream = null;
+let vadAudioCtx = null;
+let vadAnalyser = null;
+let vadInterval = null;
+let isSpeaking = false;
+
+/* ===== 持久麦克风流与语音活动检测 (VAD) ===== */
+
+/* 请求麦克风权限并创建持久流 */
+async function requestMicPermission() {
+  if (!checkSecureMediaAccess()) return false;
+  if (persistentMicStream && persistentMicStream.active) return true;
+  try {
+    persistentMicStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    micPermissionGranted = true;
+    localStorage.setItem('xiaofeng_permissions_granted', '1');
+    initVAD();
+    return true;
+  } catch (e) {
+    if (e.name === 'NotAllowedError') {
+      showToast('麦克风权限被拒绝。请在浏览器设置中允许麦克风访问', 'error');
+    }
+    return false;
+  }
+}
+
+/* 初始化 VAD 语音活动检测 */
+function initVAD() {
+  if (!persistentMicStream || vadAudioCtx) return;
+  try {
+    vadAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const source = vadAudioCtx.createMediaStreamSource(persistentMicStream);
+    vadAnalyser = vadAudioCtx.createAnalyser();
+    vadAnalyser.fftSize = 512;
+    source.connect(vadAnalyser);
+  } catch (e) {
+    console.warn('VAD 初始化失败:', e);
+  }
+}
+
+/* 获取当前音频音量级别 */
+function getAudioLevel() {
+  if (!vadAnalyser) return 0;
+  const data = new Uint8Array(vadAnalyser.frequencyBinCount);
+  vadAnalyser.getByteTimeDomainData(data);
+  let sum = 0;
+  for (let i = 0; i < data.length; i++) {
+    const val = (data[i] - 128) / 128;
+    sum += val * val;
+  }
+  return Math.sqrt(sum / data.length);
+}
+
+/* 启动 VAD 监听 */
+function startVADMonitoring(onVoiceStart, onVoiceEnd) {
+  if (vadInterval) clearInterval(vadInterval);
+  let wasSpeaking = false;
+  vadInterval = setInterval(() => {
+    const level = getAudioLevel();
+    const threshold = 0.04;
+    if (level > threshold && !wasSpeaking) {
+      wasSpeaking = true;
+      isSpeaking = true;
+      if (onVoiceStart) onVoiceStart();
+    } else if (level <= threshold && wasSpeaking) {
+      wasSpeaking = false;
+      isSpeaking = false;
+      if (onVoiceEnd) onVoiceEnd();
+    }
+  }, 200);
+}
+
+/* 停止 VAD 监听 */
+function stopVADMonitoring() {
+  if (vadInterval) { clearInterval(vadInterval); vadInterval = null; }
+  isSpeaking = false;
+}
+
+/* 确保麦克风权限已授予，必要时弹出授权请求 */
+async function ensurePermissions() {
+  if (micPermissionGranted && persistentMicStream && persistentMicStream.active) return true;
+  try {
+    if (navigator.permissions) {
+      const micStatus = await navigator.permissions.query({ name: 'microphone' });
+      if (micStatus.state === 'granted') {
+        micPermissionGranted = true;
+        if (!persistentMicStream || !persistentMicStream.active) {
+          await requestMicPermission();
+        }
+        return true;
+      }
+    }
+  } catch (e) {}
+  return await requestMicPermission();
+}
+
+/* ===== DOM 元素引用 ===== */
+const chatArea = document.getElementById('chatArea');
+const textInput = document.getElementById('textInput');
+const interimTextEl = document.getElementById('interimText');
+const micBtn = document.getElementById('micBtn');
+const sendBtn = document.getElementById('sendBtn');
+const cameraBtn = document.getElementById('cameraBtn');
+const gearBtn = document.getElementById('gearBtn');
+const analyzeBtn = document.getElementById('analyzeBtn');
+const autoAnalyzeBtn = document.getElementById('autoAnalyzeBtn');
+const settingsPanel = document.getElementById('settingsPanel');
+const settingsOverlay = document.getElementById('settingsOverlay');
+const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+const testConnectionBtn = document.getElementById('testConnectionBtn');
+const apiEndpointInput = document.getElementById('apiEndpoint');
+const apiKeyInput = document.getElementById('apiKey');
+const modelNameInput = document.getElementById('modelName');
+const providerPresetSelect = document.getElementById('providerPreset');
+
+/* ===== 服务商预设配置 ===== */
+const PROVIDER_PRESETS = {
+  volcengine: {
+    endpoint: 'https://ark.cn-beijing.volces.com/api/v3/chat/completions',
+    model: '',
+    modelHint: '填写资源ID（如 ep-20250101xxxxx）',
+    keyHint: '在火山引擎「API Key管理」中创建'
+  },
+  deepseek: {
+    endpoint: 'https://api.deepseek.com/v1/chat/completions',
+    model: 'deepseek-chat',
+    modelHint: 'deepseek-chat 或 deepseek-reasoner',
+    keyHint: '在 DeepSeek 开放平台创建'
+  },
+  openai: {
+    endpoint: 'https://api.openai.com/v1/chat/completions',
+    model: 'gpt-4o',
+    modelHint: 'gpt-4o / gpt-4o-mini / gpt-3.5-turbo',
+    keyHint: '在 OpenAI API Keys 页面创建'
+  },
+  qwen: {
+    endpoint: 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions',
+    model: 'qwen-turbo',
+    modelHint: 'qwen-turbo / qwen-plus / qwen-max',
+    keyHint: '在阿里云百炼平台创建'
+  },
+  zhipu: {
+    endpoint: 'https://open.bigmodel.cn/api/paas/v4/chat/completions',
+    model: 'glm-4-flash',
+    modelHint: 'glm-4-flash / glm-4 / glm-4-plus',
+    keyHint: '在智谱AI开放平台创建'
+  },
+  moonshot: {
+    endpoint: 'https://api.moonshot.cn/v1/chat/completions',
+    model: 'moonshot-v1-8k',
+    modelHint: 'moonshot-v1-8k / moonshot-v1-32k / moonshot-v1-128k',
+    keyHint: '在 Moonshot 开放平台创建'
+  },
+  siliconflow: {
+    endpoint: 'https://api.siliconflow.cn/v1/chat/completions',
+    model: 'Qwen/Qwen2.5-7B-Instruct',
+    modelHint: 'Qwen/Qwen2.5-7B-Instruct 等',
+    keyHint: '在 SiliconFlow 创建'
+  }
+};
+
+providerPresetSelect.addEventListener('change', () => {
+  const key = providerPresetSelect.value;
+  if (!key || key === 'custom') return;
+  const preset = PROVIDER_PRESETS[key];
+  if (!preset) return;
+  apiEndpointInput.value = preset.endpoint;
+  modelNameInput.value = preset.model;
+  modelNameInput.placeholder = preset.modelHint || '输入模型名称';
+  apiKeyInput.placeholder = preset.keyHint || '粘贴你的 API Key';
+  apiEndpointInput.classList.remove('invalid');
+  apiKeyInput.classList.remove('invalid');
+});
+
+/* ===== Toast 通知函数 ===== */
+function showToast(msg, type = '') {
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = 'toast' + (type ? ' ' + type : '');
+  toast.textContent = msg;
+  container.appendChild(toast);
+  setTimeout(() => toast.remove(), 3200);
+}
+
+/* ===== 设置面板控制 ===== */
+function openSettings() {
+  apiEndpointInput.value = configManager.config.apiEndpoint || '';
+  apiKeyInput.value = configManager.config.apiKey || '';
+  modelNameInput.value = configManager.config.modelName || 'gpt-4o';
+  settingsPanel.classList.add('open');
+  settingsOverlay.classList.add('open');
+}
+
+function closeSettings() {
+  settingsPanel.classList.remove('open');
+  settingsOverlay.classList.remove('open');
+}
+
+gearBtn.addEventListener('click', openSettings);
+closeSettingsBtn.addEventListener('click', closeSettings);
+settingsOverlay.addEventListener('click', closeSettings);
+
+/* ===== 设置面板标签页切换 ===== */
+function switchSettingsTab(tabName) {
+  document.querySelectorAll('.settings-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.settings-tab-content').forEach(c => c.classList.remove('active'));
+  const tabBtn = document.querySelector(`.settings-tab[data-tab="${tabName}"]`);
+  const tabContent = document.getElementById(tabName);
+  if (tabBtn) tabBtn.classList.add('active');
+  if (tabContent) tabContent.classList.add('active');
+}
+document.querySelectorAll('.settings-tab').forEach(tab => {
+  tab.addEventListener('click', () => switchSettingsTab(tab.dataset.tab));
+});
+
+saveSettingsBtn.addEventListener('click', () => {
+  const endpoint = apiEndpointInput.value.trim();
+  const key = apiKeyInput.value.trim();
+
+  apiEndpointInput.classList.remove('invalid');
+  apiKeyInput.classList.remove('invalid');
+
+  if (!endpoint || !key) {
+    if (!endpoint) apiEndpointInput.classList.add('invalid');
+    if (!key) apiKeyInput.classList.add('invalid');
+    showToast('请填写完整的 API 配置', 'error');
+    return;
+  }
+
+  if (!endpoint.startsWith('http://') && !endpoint.startsWith('https://')) {
+    apiEndpointInput.classList.add('invalid');
+    showToast('请输入有效的 API 地址（以 http:// 或 https:// 开头）', 'error');
+    return;
+  }
+
+  configManager.save({
+    apiEndpoint: endpoint,
+    apiKey: key,
+    modelName: modelNameInput.value.trim() || 'gpt-4o'
+  });
+  showToast('设置已保存', 'success');
+  closeSettings();
+});
+
+testConnectionBtn.addEventListener('click', async () => {
+  const endpoint = apiEndpointInput.value.trim();
+  const key = apiKeyInput.value.trim();
+  const model = modelNameInput.value.trim() || 'gpt-4o';
+  const statusEl = document.getElementById('connectionStatus');
+  const btn = document.getElementById('testConnectionBtn');
+
+  apiEndpointInput.classList.remove('invalid');
+  apiKeyInput.classList.remove('invalid');
+
+  if (!endpoint || !key) {
+    if (!endpoint) apiEndpointInput.classList.add('invalid');
+    if (!key) apiKeyInput.classList.add('invalid');
+    showToast('请填写完整的 API 配置', 'error');
+    return;
+  }
+
+  if (!endpoint.startsWith('http://') && !endpoint.startsWith('https://')) {
+    apiEndpointInput.classList.add('invalid');
+    showToast('请输入有效的 API 地址（以 http:// 或 https:// 开头）', 'error');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = '测试中...';
+  statusEl.textContent = '';
+
+  try {
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${key}`
+      },
+      body: JSON.stringify({
+        model: model,
+        messages: [{ role: 'user', content: 'hi' }],
+        max_tokens: 5
+      })
+    });
+
+    if (response.ok) {
+      showToast('✅ 连接成功！API 可正常访问', 'success');
+      statusEl.innerHTML = '<span style="color:var(--success)">✅ 已连接</span>';
+    } else if (response.status === 401) {
+      showToast('❌ API Key 无效', 'error');
+      statusEl.innerHTML = '<span style="color:var(--danger)">❌ 连接失败</span>';
+    } else if (response.status === 404) {
+      showToast('❌ API 地址或模型名称不正确', 'error');
+      statusEl.innerHTML = '<span style="color:var(--danger)">❌ 连接失败</span>';
+    } else {
+      const errText = await response.text().catch(() => '');
+      let errMsg = `API 请求失败 (${response.status})`;
+      try {
+        const errJson = JSON.parse(errText);
+        errMsg = errJson.error?.message || errMsg;
+      } catch (_) {}
+      showToast('❌ ' + errMsg, 'error');
+      statusEl.innerHTML = '<span style="color:var(--danger)">❌ 连接失败</span>';
+    }
+  } catch (e) {
+    showToast('❌ 无法连接到 API，请检查地址和网络', 'error');
+    statusEl.innerHTML = '<span style="color:var(--danger)">❌ 连接失败</span>';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🔗 测试连接';
+  }
+});
+
+/* ===== 麦克风按钮状态更新 ===== */
+function updateMicButton(recording) {
+  if (recording) {
+    micBtn.classList.add('recording');
+  } else {
+    micBtn.classList.remove('recording');
+  }
+}
+
+/* ===== 头像状态切换 ===== */
+function setAvatarState(state) {
+  avatarState = state;
+  const wrapper = document.getElementById('avatarWrapper');
+  wrapper.className = 'avatar-wrapper';
+  if (state === 'listening') wrapper.classList.add('listening');
+  else if (state === 'speaking') wrapper.classList.add('speaking');
+  else if (state === 'thinking') wrapper.classList.add('thinking');
+  else if (state === 'awake') wrapper.classList.add('awake');
+}
+
+/* ===== 头像 Canvas 动画系统 ===== */
+const avatarCanvas = document.getElementById('avatarCanvas');
+const actx = avatarCanvas.getContext('2d');
+let animTime = 0;
+
+/* 主绘制循环 */
+function drawAvatar(timestamp) {
+  avatarAnimFrame = requestAnimationFrame(drawAvatar);
+  animTime = timestamp || 0;
+  const w = avatarCanvas.width;
+  const h = avatarCanvas.height;
+  const cx = w / 2;
+  const cy = h / 2;
+
+  actx.clearRect(0, 0, w, h);
+
+  switch (avatarState) {
+    case 'idle': drawIdle(cx, cy, w); break;
+    case 'listening': drawListening(cx, cy, w); break;
+    case 'speaking': drawSpeaking(cx, cy, w); break;
+    case 'thinking': drawThinking(cx, cy, w); break;
+    case 'awake': drawAwake(cx, cy, w); break;
+    default: drawIdle(cx, cy, w);
+  }
+}
+
+function drawAvatarFace(cx, cy, baseR, borderColor) {
+  const grad = actx.createRadialGradient(cx - baseR * 0.3, cy - baseR * 0.3, 0, cx, cy, baseR);
+  grad.addColorStop(0, '#1a237e');
+  grad.addColorStop(0.5, '#0d47a1');
+  grad.addColorStop(1, '#01579b');
+  actx.fillStyle = grad;
+  actx.beginPath();
+  actx.arc(cx, cy, baseR, 0, Math.PI * 2);
+  actx.fill();
+  actx.strokeStyle = borderColor;
+  actx.lineWidth = 2;
+  actx.stroke();
+}
+
+/* 空闲状态：呼吸动画 + 笑脸 */
+function drawIdle(cx, cy, w) {
+  const t = animTime * 0.001;
+  const breathe = Math.sin(t * 1.5) * 8;
+  const baseR = w * 0.28 + breathe;
+
+  /* 外圈光晕 */
+  const glow = actx.createRadialGradient(cx, cy, baseR * 0.5, cx, cy, baseR * 1.5);
+  glow.addColorStop(0, 'rgba(0, 229, 255, 0.08)');
+  glow.addColorStop(1, 'rgba(0, 229, 255, 0)');
+  actx.fillStyle = glow;
+  actx.beginPath();
+  actx.arc(cx, cy, baseR * 1.5, 0, Math.PI * 2);
+  actx.fill();
+
+  /* 主体圆 */
+  drawAvatarFace(cx, cy, baseR, 'rgba(0, 229, 255, 0.4)');
+
+  /* 眼睛 */
+  const eyeY = cy - baseR * 0.12;
+  const eyeSpacing = baseR * 0.3;
+  const eyeR = baseR * 0.08 + Math.sin(t * 2) * 1;
+  actx.fillStyle = '#00e5ff';
+  actx.beginPath();
+  actx.arc(cx - eyeSpacing, eyeY, eyeR, 0, Math.PI * 2);
+  actx.fill();
+  actx.beginPath();
+  actx.arc(cx + eyeSpacing, eyeY, eyeR, 0, Math.PI * 2);
+  actx.fill();
+
+  /* 微笑 */
+  actx.strokeStyle = '#00e5ff';
+  actx.lineWidth = 2.5;
+  actx.lineCap = 'round';
+  actx.beginPath();
+  actx.arc(cx, cy + baseR * 0.05, baseR * 0.22, 0.15 * Math.PI, 0.85 * Math.PI);
+  actx.stroke();
+}
+
+/* 聆听状态：声波扩散动画 */
+function drawListening(cx, cy, w) {
+  const t = animTime * 0.001;
+  const baseR = w * 0.28;
+
+  /* 扩散的同心圆波纹 */
+  for (let i = 0; i < 4; i++) {
+    const phase = (t * 1.2 + i * 0.25) % 1;
+    const r = baseR + phase * baseR * 0.8;
+    const alpha = (1 - phase) * 0.35;
+    actx.strokeStyle = `rgba(0, 229, 255, ${alpha})`;
+    actx.lineWidth = 2;
+    actx.beginPath();
+    actx.arc(cx, cy, r, 0, Math.PI * 2);
+    actx.stroke();
+  }
+
+  /* 主体圆 */
+  drawAvatarFace(cx, cy, baseR, 'rgba(0, 229, 255, 0.6)');
+
+  /* 耳朵图标（简化为弧线） */
+  const earY = cy - baseR * 0.05;
+  actx.strokeStyle = '#00e5ff';
+  actx.lineWidth = 2.5;
+  actx.lineCap = 'round';
+  /* 左耳 */
+  actx.beginPath();
+  actx.arc(cx - baseR * 0.2, earY, baseR * 0.12, -0.6 * Math.PI, 0.6 * Math.PI);
+  actx.stroke();
+  /* 右耳 */
+  actx.beginPath();
+  actx.arc(cx + baseR * 0.2, earY, baseR * 0.12, -0.6 * Math.PI, 0.6 * Math.PI);
+  actx.stroke();
+  /* 嘴巴 - 张开 */
+  actx.beginPath();
+  actx.arc(cx, cy + baseR * 0.18, baseR * 0.1, 0, Math.PI);
+  actx.stroke();
+}
+
+/* 说话状态：频率条动画 */
+function drawSpeaking(cx, cy, w) {
+  const t = animTime * 0.001;
+  const baseR = w * 0.28;
+
+  /* 主体圆 */
+  drawAvatarFace(cx, cy, baseR, 'rgba(124, 77, 255, 0.5)');
+
+  /* 频率条 */
+  const barCount = 12;
+  const barWidth = baseR * 0.08;
+  const totalWidth = barCount * barWidth * 1.6;
+  const startX = cx - totalWidth / 2;
+
+  for (let i = 0; i < barCount; i++) {
+    const x = startX + i * barWidth * 1.6;
+    const barH = (Math.sin(t * 6 + i * 0.8) * 0.5 + 0.5) * baseR * 0.5 + baseR * 0.05;
+    const hue = 180 + i * 8;
+    actx.fillStyle = `hsla(${hue}, 100%, 65%, 0.8)`;
+    actx.beginPath();
+    actx.roundRect(x - barWidth / 2, cy + baseR * 0.1 - barH, barWidth, barH, 2);
+    actx.fill();
+  }
+
+  /* 眼睛 - 弯弯的开心眼 */
+  actx.strokeStyle = '#00e5ff';
+  actx.lineWidth = 2.5;
+  actx.lineCap = 'round';
+  const eyeY = cy - baseR * 0.15;
+  actx.beginPath();
+  actx.arc(cx - baseR * 0.25, eyeY, baseR * 0.08, 0.1 * Math.PI, 0.9 * Math.PI);
+  actx.stroke();
+  actx.beginPath();
+  actx.arc(cx + baseR * 0.25, eyeY, baseR * 0.08, 0.1 * Math.PI, 0.9 * Math.PI);
+  actx.stroke();
+}
+
+/* 思考状态：旋转加载动画 */
+function drawThinking(cx, cy, w) {
+  const t = animTime * 0.001;
+  const baseR = w * 0.28;
+
+  /* 旋转弧线 */
+  for (let i = 0; i < 3; i++) {
+    const angle = t * 2 + i * (Math.PI * 2 / 3);
+    const arcR = baseR + 15 + i * 8;
+    const alpha = 0.3 + i * 0.15;
+    actx.strokeStyle = `rgba(255, 193, 7, ${alpha})`;
+    actx.lineWidth = 3;
+    actx.lineCap = 'round';
+    actx.beginPath();
+    actx.arc(cx, cy, arcR, angle, angle + Math.PI * 0.6);
+    actx.stroke();
+  }
+
+  /* 粒子 */
+  for (let i = 0; i < 8; i++) {
+    const angle = t * 1.5 + i * (Math.PI * 2 / 8);
+    const pr = baseR * 0.7 + Math.sin(t * 3 + i) * 10;
+    const px = cx + Math.cos(angle) * pr;
+    const py = cy + Math.sin(angle) * pr;
+    const size = 2 + Math.sin(t * 4 + i * 2) * 1;
+    actx.fillStyle = `rgba(255, 193, 7, ${0.5 + Math.sin(t * 3 + i) * 0.3})`;
+    actx.beginPath();
+    actx.arc(px, py, size, 0, Math.PI * 2);
+    actx.fill();
+  }
+
+  /* 主体圆 */
+  drawAvatarFace(cx, cy, baseR, 'rgba(255, 193, 7, 0.4)');
+
+  /* 思考表情 - 省略号 */
+  const dotY = cy + baseR * 0.05;
+  for (let i = 0; i < 3; i++) {
+    const dx = cx - baseR * 0.15 + i * baseR * 0.15;
+    const bounce = Math.sin(t * 3 + i * 0.6) * 4;
+    actx.fillStyle = '#ffc107';
+    actx.beginPath();
+    actx.arc(dx, dotY + bounce, baseR * 0.05, 0, Math.PI * 2);
+    actx.fill();
+  }
+
+  /* 眼睛 */
+  const eyeY = cy - baseR * 0.15;
+  actx.fillStyle = '#00e5ff';
+  actx.beginPath();
+  actx.arc(cx - baseR * 0.22, eyeY, baseR * 0.06, 0, Math.PI * 2);
+  actx.fill();
+  actx.beginPath();
+  actx.arc(cx + baseR * 0.22, eyeY, baseR * 0.06, 0, Math.PI * 2);
+  actx.fill();
+}
+
+/* 唤醒状态：彩虹旋转 + 脉冲动画 */
+function drawAwake(cx, cy, w) {
+  const t = performance.now() / 1000;
+  const baseR = w * 0.28;
+  // 旋转彩虹环
+  const ringR = baseR + 6 + Math.sin(t * 8) * 3;
+  actx.strokeStyle = `hsl(${(t * 120) % 360}, 80%, 60%)`;
+  actx.lineWidth = 3;
+  actx.beginPath(); actx.arc(cx, cy, ringR, 0, Math.PI*2); actx.stroke();
+  // 第二圈偏移
+  actx.strokeStyle = `hsl(${((t * 120) + 180) % 360}, 80%, 60%)`;
+  actx.beginPath(); actx.arc(cx, cy, ringR + 4, 0, Math.PI*2); actx.stroke();
+  // 脉冲中心
+  const pulseR = baseR * (0.85 + Math.sin(t * 6) * 0.1);
+  const grad = actx.createRadialGradient(cx, cy, 0, cx, cy, pulseR);
+  grad.addColorStop(0, 'rgba(255,255,255,0.9)');
+  grad.addColorStop(0.5, '#7c4dff');
+  grad.addColorStop(1, '#1a237e');
+  actx.fillStyle = grad;
+  actx.beginPath(); actx.arc(cx, cy, pulseR, 0, Math.PI*2); actx.fill();
+  // 星星眼睛
+  actx.fillStyle = '#fff';
+  actx.font = `${baseR*0.5}px sans-serif`;
+  actx.textAlign = 'center';
+  actx.fillText('⭐', cx - baseR*0.35, cy - baseR*0.1);
+  actx.fillText('⭐', cx + baseR*0.35, cy - baseR*0.1);
+}
+
+/* 启动头像动画循环 */
+drawAvatar();
+
+/* ===== Markdown 渲染配置 ===== */
+if (typeof marked !== 'undefined') {
+  marked.setOptions({
+    breaks: true,
+    gfm: true
+  });
+}
+
+function renderMarkdown(text) {
+  if (typeof marked !== 'undefined') {
+    try {
+      return marked.parse(text);
+    } catch (e) {
+      return escapeHtml(text);
+    }
+  }
+  return escapeHtml(text).replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+/* ===== 聊天消息管理 ===== */
+
+/* 添加消息到聊天区域 */
+function addMessage(role, text, streaming = false) {
+  const row = document.createElement('div');
+  row.className = `message-row ${role}`;
+
+  const bubble = document.createElement('div');
+  bubble.className = 'message-bubble';
+
+  if (streaming) {
+    bubble.innerHTML = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
+    row.dataset.streaming = 'true';
+    currentAiMessageEl = bubble;
+    currentAiText = '';
+  } else {
+    bubble.innerHTML = renderMarkdown(text);
+  }
+
+  row.appendChild(bubble);
+  chatArea.appendChild(row);
+  scrollToBottom();
+  return bubble;
+}
+
+/* 更新流式消息内容 */
+function updateStreamingMessage(token) {
+  if (!currentAiMessageEl) return;
+  currentAiText += token;
+  currentAiMessageEl.innerHTML = renderMarkdown(currentAiText);
+  scrollToBottom();
+}
+
+/* 完成流式消息 */
+function finalizeStreamingMessage() {
+  if (currentAiMessageEl && currentAiText) {
+    currentAiMessageEl.innerHTML = renderMarkdown(currentAiText);
+    const row = currentAiMessageEl.closest('.message-row');
+    if (row) delete row.dataset.streaming;
+  }
+  currentAiMessageEl = null;
+}
+
+/* 滚动到底部 */
+function scrollToBottom() {
+  requestAnimationFrame(() => {
+    chatArea.scrollTop = chatArea.scrollHeight;
+  });
+}
+
+/* ===== 聊天记录持久化 ===== */
+const CHAT_STORAGE_KEY = 'xiaofeng_chat_history';
+
+function saveChatHistory() {
+  const messages = [];
+  const rows = chatArea.querySelectorAll('.message-row');
+  rows.forEach(row => {
+    const role = row.classList.contains('user') ? 'user' : 'assistant';
+    const bubble = row.querySelector('.message-bubble');
+    if (bubble) {
+      messages.push({ role, content: bubble.textContent || '' });
+    }
+  });
+  /* 只保留最近50条 */
+  const toSave = messages.slice(-50);
+  try {
+    localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(toSave));
+  } catch (e) {
+    console.warn('保存聊天记录失败:', e);
+  }
+}
+
+function loadChatHistory() {
+  try {
+    const saved = localStorage.getItem(CHAT_STORAGE_KEY);
+    if (saved) {
+      const messages = JSON.parse(saved);
+      messages.forEach(msg => {
+        addMessage(msg.role === 'user' ? 'user' : 'ai', msg.content);
+      });
+    }
+  } catch (e) {
+    console.warn('加载聊天记录失败:', e);
+  }
+}
+
+/* ===== 构建发送给 API 的消息列表 ===== */
+function buildMessages(extraContent) {
+  let sysPrompt = configManager.config.systemPrompt || '你是一个可爱、聪明的AI助手，名叫小锋，回答简洁友善。';
+  const now = new Date();
+  const weekDays = ['日','一','二','三','四','五','六'];
+  sysPrompt += `\n当前时间：${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 星期${weekDays[now.getDay()]} ${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;
+  const maxRounds = configManager.config.maxRounds || 20;
+  const msgs = [{ role: 'system', content: sysPrompt }];
+
+  /* 从聊天区域提取历史消息 */
+  const rows = chatArea.querySelectorAll('.message-row');
+  const historyRows = Array.from(rows).slice(-(maxRounds * 2));
+  historyRows.forEach(row => {
+    if (row.dataset.streaming === 'true') return;
+    const bubble = row.querySelector('.message-bubble');
+    if (bubble && bubble.querySelector('.typing-indicator')) return;
+    const isUser = row.classList.contains('user');
+    if (bubble) {
+      msgs.push({
+        role: isUser ? 'user' : 'assistant',
+        content: bubble.textContent || ''
+      });
+    }
+  });
+
+  /* 如果有额外内容（如图片），替换最后一条用户消息或追加 */
+  if (extraContent) {
+    msgs.push(extraContent);
+  }
+
+  return msgs;
+}
+
+/* ===== LLM API 调用（流式） ===== */
+async function callLLMAPI(userMessage, extraContent) {
+  if (!configManager.isConfigured()) {
+    showToast('请先在设置中填写 API 配置', 'error');
+    openSettings();
+    return;
+  }
+
+  if (isApiBusy) {
+    showToast('小锋正在思考中，请稍等...', 'error');
+    return;
+  }
+
+  isApiBusy = true;
+  setAvatarState('thinking');
+
+  /* 在聊天区显示用户消息 */
+  if (userMessage) {
+    addMessage('user', userMessage);
+  }
+
+  /* 添加 AI 消息占位（流式） */
+  addMessage('ai', '', true);
+
+  const messages = buildMessages(extraContent);
+  const { apiEndpoint, apiKey, modelName } = configManager.config;
+
+  try {
+    const response = await fetch(apiEndpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: modelName,
+        messages: messages,
+        stream: true
+      })
+    });
+
+    if (!response.ok) {
+      const errText = await response.text().catch(() => '');
+      let errMsg = `API 请求失败 (${response.status})`;
+      if (response.status === 401) errMsg = 'API Key 无效，请检查设置';
+      else if (response.status === 404) errMsg = 'API 地址或模型名称不正确';
+      else if (response.status === 429) errMsg = '请求过于频繁，请稍后再试';
+      else if (errText) {
+        try {
+          const errJson = JSON.parse(errText);
+          errMsg = errJson.error?.message || errMsg;
+        } catch (_) {}
+      }
+      throw new Error(errMsg);
+    }
+
+    /* 尝试流式读取 */
+    const contentType = response.headers.get('content-type') || '';
+    if (contentType.includes('text/event-stream')) {
+      await handleStreamResponse(response);
+    } else {
+      try {
+        const data = await response.json();
+        const content = data.choices?.[0]?.message?.content || data.choices?.[0]?.text || '（无回复内容）';
+        currentAiText = content;
+        if (currentAiMessageEl) {
+          currentAiMessageEl.innerHTML = renderMarkdown(content);
+        }
+        ttsManager.speak(content);
+        saveChatHistory();
+        isApiBusy = false;
+        setAvatarState('idle');
+        currentAiMessageEl = null;
+        return;
+      } catch (parseErr) {
+        throw new Error('API 响应解析失败: ' + parseErr.message);
+      }
+    }
+
+    /* 流式完成后处理 */
+    finalizeStreamingMessage();
+    if (currentAiText) {
+      ttsManager.speak(currentAiText);
+    }
+    saveChatHistory();
+
+  } catch (e) {
+    console.error('API 调用出错:', e);
+    finalizeStreamingMessage();
+    if (!currentAiText) {
+      /* 移除空的 AI 消息占位 */
+      const lastRow = chatArea.querySelector('.message-row.ai:last-child');
+      if (lastRow) lastRow.remove();
+    }
+    showToast(e.message || '网络请求失败', 'error');
+  } finally {
+    isApiBusy = false;
+    setAvatarState('idle');
+  }
+}
+
+/* 处理流式响应 - 逐 token 读取并显示 */
+async function handleStreamResponse(response) {
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop() || '';
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed || !trimmed.startsWith('data: ')) continue;
+      const data = trimmed.slice(6);
+      if (data === '[DONE]') return;
+
+      try {
+        const json = JSON.parse(data);
+        const token = json.choices?.[0]?.delta?.content || '';
+        if (token) {
+          updateStreamingMessage(token);
+        }
+      } catch (_) {
+        /* 忽略解析失败的行 */
+      }
+    }
+  }
+}
+
+/* ===== 视觉识别 API 调用 ===== */
+async function analyzePhoto() {
+  const base64 = cameraManager.captureFrame();
+  if (!base64) {
+    showToast('请先开启摄像头', 'error');
+    return;
+  }
+
+  const content = [
+    { type: 'text', text: '请详细描述这张图片的内容' },
+    { type: 'image_url', image_url: { url: base64 } }
+  ];
+
+  const overlay = document.getElementById('cameraOverlay');
+  overlay.style.display = 'block';
+  overlay.textContent = '🔍 分析中...';
+
+  addMessage('user', '🔍 分析摄像头画面');
+
+  await callLLMAPI(null, { role: 'user', content });
+
+  if (currentAiText) {
+    overlay.textContent = currentAiText.substring(0, 100) + (currentAiText.length > 100 ? '...' : '');
+  }
+}
+
+/* ===== 课堂实验台逻辑 ===== */
+const trainerPrompts = {
+  math: '你是一个严厉但风趣的数学老师，回答要先讲思路，再给答案，最后用一句简短鼓励收尾。',
+  story: '你是一个会讲故事的学习伙伴，回答要生动、有画面感，适合小学生理解。',
+  english: '你是一个耐心的英语口语陪练，先用简单英文回答，再用中文解释重点。',
+  homework: '你是一个温柔但坚定的作业提醒助手，帮助学生制定小目标，不替学生直接完成作业。'
+};
+
+function inferIntent(text) {
+  const t = text || '';
+  if (/播放|听歌|来一首|放一首|音乐/.test(t)) return '想听音乐';
+  if (/天气|下雨|带伞|温度/.test(t)) return '想查天气';
+  if (/算|等于|乘|加|减|除|[0-9]+[×x*+\/-]/.test(t)) return '想算一道题';
+  if (/为什么|真的吗|历史|几次|证据|来源/.test(t)) return '需要小心核实';
+  if (/你好小锋|小锋/.test(t)) return '可能是唤醒或聊天';
+  return '普通聊天或提问';
+}
+
+function updateMagicTrace(text, status) {
+  const asr = document.getElementById('magicAsrText');
+  const nlp = document.getElementById('magicNlpText');
+  const tts = document.getElementById('magicTtsText');
+  if (!asr || !nlp || !tts) return;
+  const clean = (text || '').trim();
+  asr.textContent = clean ? `我听见：${clean}` : '等你输入一句话，我会显示“听见了什么”。';
+  nlp.textContent = clean ? `我理解：${inferIntent(clean)}` : '我会判断这是聊天、音乐、天气，还是安全提醒。';
+  tts.textContent = status || '准备回答后，再把文字读给你听。';
+}
+
+function checkPrivacyRisk(text) {
+  const patterns = [
+    /验证码|支付密码|银行卡|身份证|家庭住址|我家住|学校叫|手机号|电话号码|真实姓名/,
+    /密码是|验证码是|身份证号是|手机号码是/
+  ];
+  return patterns.some(p => p.test(text || ''));
+}
+
+function checkHallucinationRisk(text) {
+  return /为什么.*生气|预测|彩票|一定会|历史.*几次|有没有明确记载|编一个证据|证明/.test(text || '');
+}
+
+function updateSafetyPanels(text) {
+  const privacy = document.getElementById('privacyGuardianText');
+  const hallucination = document.getElementById('hallucinationGuardText');
+  if (privacy) {
+    privacy.textContent = checkPrivacyRisk(text)
+      ? '检测到可能的隐私信息：不要把姓名、住址、学校、验证码、密码告诉AI。'
+      : '隐私检查通过：没有发现明显的敏感信息。';
+  }
+  if (hallucination) {
+    hallucination.textContent = checkHallucinationRisk(text)
+      ? '这类问题AI可能会猜测或编细节，重要答案要核实来源。'
+      : '提醒：事实类、历史类、健康类问题仍建议多方核实。';
+  }
+}
+
+function initClassroomLab() {
+  const lab = document.getElementById('classroomLab');
+  const toggle = document.getElementById('classroomLabToggle');
+  if (!lab || !toggle) return;
+
+  toggle.addEventListener('click', () => {
+    lab.classList.toggle('collapsed');
+    toggle.textContent = lab.classList.contains('collapsed') ? '展开' : '收起';
+  });
+
+  document.querySelectorAll('.lab-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.lab-tab').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.lab-content').forEach(panel => panel.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.labTab)?.classList.add('active');
+    });
+  });
+
+  document.querySelectorAll('#trainerRoleBtns .lab-chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const prompt = trainerPrompts[btn.dataset.role];
+      if (!prompt) return;
+      document.getElementById('systemPrompt').value = prompt;
+      configManager.save({ systemPrompt: prompt });
+      showToast('已更新小锋的人设', 'success');
+      updateMagicTrace('给小锋设置新身份', 'TTS：小锋会用新角色回答。');
+    });
+  });
+
+  document.querySelectorAll('.challenge-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      textInput.value = btn.dataset.prompt || '';
+      textInput.dispatchEvent(new Event('input'));
+      textInput.focus();
+      updateMagicTrace(textInput.value, '点击发送后，小锋会接受挑战。');
+      updateSafetyPanels(textInput.value);
+    });
+  });
+
+  document.getElementById('wakeDemoSleepBtn')?.addEventListener('click', () => {
+    const state = document.getElementById('wakeDemoState');
+    state.textContent = '小锋正在睡觉';
+    state.classList.remove('awake');
+  });
+  document.getElementById('wakeDemoAwakeBtn')?.addEventListener('click', () => {
+    const state = document.getElementById('wakeDemoState');
+    state.textContent = '听到“你好小锋”，我醒啦';
+    state.classList.add('awake');
+    updateMagicTrace('你好小锋', 'TTS：唤醒后可以继续对话。');
+  });
+}
+
+async function initMobileAccess() {
+  const card = document.getElementById('mobileAccessCard');
+  const urlEl = document.getElementById('mobileAccessUrl');
+  const copyBtn = document.getElementById('copyMobileUrlBtn');
+  if (!card || !urlEl || !copyBtn || location.protocol === 'file:') return;
+
+  try {
+    const response = await fetch('/api/health', { cache: 'no-store' });
+    if (!response.ok) return;
+    const data = await response.json();
+    const mobileUrl = data.mobile_url || location.href;
+    urlEl.textContent = mobileUrl;
+    card.hidden = false;
+
+    copyBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(mobileUrl);
+        showToast('手机访问地址已复制', 'success');
+      } catch (e) {
+        urlEl.textContent = mobileUrl;
+        showToast('请手动复制这段地址', 'error');
+      }
+    });
+  } catch (e) {
+    card.hidden = true;
+  }
+}
+
+/* ===== 发送消息逻辑 ===== */
+async function sendMessage() {
+  const text = textInput.value.trim();
+  if (!text) return;
+  updateMagicTrace(text, '正在准备回答或执行工具。');
+  updateSafetyPanels(text);
+  if (checkPrivacyRisk(text)) {
+    textInput.value = '';
+    textInput.style.height = 'auto';
+    addMessage('user', text);
+    addMessage('ai', '🛡️ 这句话里可能包含隐私信息。请不要把真实姓名、住址、学校、验证码、密码告诉AI。我们可以换一种不暴露隐私的问法。');
+    ttsManager.speak('这句话里可能包含隐私信息，请不要告诉AI。');
+    saveChatHistory();
+    return;
+  }
+  if (checkHallucinationRisk(text)) {
+    updateMagicTrace(text, '提醒：这个问题可能需要核实来源。');
+  }
+  textInput.value = '';
+  textInput.style.height = 'auto';
+  ttsManager.cancel();
+  const toolResult = await toolManager.handleTool(text);
+  if (toolResult) {
+    addMessage('user', text);
+    setAvatarState('thinking');
+    if (toolResult.toolName === 'weather') {
+      addMessage('ai', '🔍 正在查询天气...');
+    } else if (toolResult.toolName === 'music' && toolResult.subType === 'play') {
+      addMessage('ai', '🎵 正在搜索音乐...');
+    } else {
+      addMessage('ai', '⏳ 处理中...');
+    }
+    await new Promise(r => setTimeout(r, 100));
+    const lastAiRow = chatArea.querySelector('.message-row.ai:last-child .message-bubble');
+    if (lastAiRow) {
+      if (toolResult.toolName === 'weather') {
+        lastAiRow.innerHTML = '<div class="tool-result weather-card">🌤️ ' + renderMarkdown(toolResult.result) + '</div>';
+      } else if (toolResult.toolName === 'music') {
+        lastAiRow.innerHTML = '<div class="tool-result">🎵 ' + renderMarkdown(toolResult.result) + '</div>';
+      } else {
+        lastAiRow.innerHTML = '<div class="tool-result">🕐 ' + renderMarkdown(toolResult.result) + '</div>';
+      }
+    }
+    setAvatarState('idle');
+    ttsManager.speak(toolResult.result.replace(/[🎵🌤️🕐🔍⏳]/g, ''));
+    saveChatHistory();
+    return;
+  }
+  callLLMAPI(text);
+}
+
+/* ===== 状态指示器更新 ===== */
+function updateStatusIndicator(text) {
+  const dot = document.getElementById('statusDot');
+  const txt = document.getElementById('statusText');
+  dot.className = 'status-dot';
+  if (!wakeEnabled) {
+    txt.textContent = text || '就绪';
+  } else if (isAwake) {
+    dot.classList.add('awake');
+    txt.textContent = text || '我在听~';
+  } else if (wakeListening) {
+    dot.classList.add('listening');
+    txt.textContent = text || '等待唤醒...';
+  } else {
+    txt.textContent = text || '唤醒已开启';
+  }
+}
+
+/* ===== 语音唤醒词检测系统 ===== */
+let wakeEnabled = false;
+let wakeListening = false;
+let wakeRecognition = null;
+let isAwake = false;
+let wakeTimeout = null;
+let wakeAudioCtx = null;
+let wasWakeActive = false;
+let wasCommandRecording = false;
+
+function pauseAllRecognition() {
+  wasWakeActive = wakeListening;
+  wasCommandRecording = speechManager && speechManager.isRecording;
+  if (wakeListening) stopWakeListening();
+  if (speechManager && speechManager.isRecording) {
+    speechManager.isRecording = false;
+    try { speechManager.recognition.stop(); } catch(e) {}
+  }
+}
+
+function resumeAllRecognition() {
+  if (wasWakeActive && wakeEnabled) {
+    setTimeout(() => { startWakeListening(); }, 300);
+  }
+  wasWakeActive = false;
+  wasCommandRecording = false;
+}
+
+/* 唤醒词匹配 */
+function normalizeWakeText(text) {
+  return String(text || '')
+    .toLowerCase()
+    .replace(/[，,。.!！?？、；;：:"“”'‘’\s]/g, '');
+}
+
+function matchWakeWord(text) {
+  const cleaned = normalizeWakeText(text);
+  const variants = [
+    '你好小锋',
+    '小锋小锋',
+    '小锋你好',
+    '嗨小锋',
+    '喂小锋',
+    '你好小峰',
+    '小峰小峰',
+    '你好小风',
+    '小风小风',
+    '你好小枫',
+    '小枫小枫',
+    '你好小凤',
+    '小凤小凤',
+    'nihaoxiaofeng',
+    'xiaofengxiaofeng',
+    'helloxiaofeng'
+  ];
+  return variants.some(v => cleaned.includes(normalizeWakeText(v)));
+}
+
+/* 播放唤醒提示音 */
+function playWakeSound() {
+  try {
+    if (!wakeAudioCtx) wakeAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = wakeAudioCtx.createOscillator();
+    const gain = wakeAudioCtx.createGain();
+    osc.connect(gain); gain.connect(wakeAudioCtx.destination);
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(800, wakeAudioCtx.currentTime);
+    osc.frequency.linearRampToValueAtTime(1200, wakeAudioCtx.currentTime + 0.15);
+    gain.gain.setValueAtTime(0.3, wakeAudioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, wakeAudioCtx.currentTime + 0.4);
+    osc.start(wakeAudioCtx.currentTime);
+    osc.stop(wakeAudioCtx.currentTime + 0.4);
+  } catch(e) {}
+}
+
+/* 触发唤醒 */
+function triggerWake() {
+  isAwake = true;
+  stopWakeListening();
+  playWakeSound();
+  setAvatarState('awake');
+  updateStatusIndicator('我在听~');
+  
+  setTimeout(() => {
+    setAvatarState('listening');
+    // 如果 SpeechManager 尚未初始化，先创建
+    if (!speechManager) {
+      speechManager = new SpeechManager(
+        (text) => { interimTextEl.textContent = text; },
+        async (text) => {
+          interimTextEl.textContent = '';
+          ttsManager.cancel();
+          if (speechManager && speechManager.isRecording) {
+            speechManager.isRecording = false;
+            try { speechManager.recognition.stop(); } catch(e) {}
+          }
+          if (isAwake) {
+            isAwake = false;
+            if (wakeTimeout) { clearTimeout(wakeTimeout); wakeTimeout = null; }
+            updateStatusIndicator();
+          }
+          const toolResult = await toolManager.handleTool(text);
+          if (toolResult) {
+            addMessage('user', text);
+            setAvatarState('thinking');
+            addMessage('ai', '⏳ 处理中...');
+            await new Promise(r => setTimeout(r, 100));
+            const lastAiRow = chatArea.querySelector('.message-row.ai:last-child .message-bubble');
+            if (lastAiRow) {
+              const iconMap = {datetime:'🕐', weather:'🌤️', music:'🎵'};
+              lastAiRow.innerHTML = '<div class="tool-result">' + (iconMap[toolResult.toolName]||'🔧') + ' ' + renderMarkdown(toolResult.result) + '</div>';
+            }
+            setAvatarState('idle');
+            ttsManager.speak(toolResult.result.replace(/[🎵🌤️🕐🔍⏳🔧]/g, ''));
+            saveChatHistory();
+          } else {
+            callLLMAPI(text);
+          }
+          if (wakeEnabled) {
+            setTimeout(() => { startWakeListening(); }, 300);
+          }
+        },
+        (msg) => { showToast(msg, 'error'); }
+      );
+    }
+    speechManager.start();
+    /* 停止唤醒监听，避免两个识别实例冲突 */
+    stopWakeListening();
+    wakeTimeout = setTimeout(() => {
+      if (isAwake && !speechManager.isRecording) {
+        isAwake = false;
+        setAvatarState('idle');
+        updateStatusIndicator();
+        startWakeListening();
+      }
+    }, 10000);
+  }, 800);
+}
+
+/* 开始唤醒监听 */
+function startWakeListening() {
+  if (wakeListening) return;
+  /* 如果手动识别正在运行，先停止 */
+  if (speechManager && speechManager.isRecording) {
+    speechManager.stop();
+  }
+  if (!persistentMicStream || !persistentMicStream.active) {
+    /* 没有持久麦克风流，尝试获取 */
+    requestMicPermission().then(granted => {
+      if (granted) startWakeListening();
+    });
+    return;
+  }
+  
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) return;
+  
+  wakeRecognition = new SR();
+  wakeRecognition.continuous = true;
+  wakeRecognition.interimResults = true;
+  wakeRecognition.lang = 'zh-CN';
+  
+  wakeRecognition.onresult = (ev) => {
+    let text = '';
+    for (let i = ev.resultIndex; i < ev.results.length; i++) {
+      text += ev.results[i][0].transcript;
+    }
+    if (matchWakeWord(text) && !isAwake) {
+      triggerWake();
+    }
+  };
+  wakeRecognition.onerror = (ev) => {
+    if (ev.error === 'not-allowed') {
+      micPermissionGranted = false;
+      showToast('麦克风权限丢失，语音唤醒已暂停', 'error');
+      stopWakeListening();
+      wakeEnabled = false;
+      document.getElementById('wakeToggle').classList.remove('active');
+      return;
+    }
+    setTimeout(() => { if (wakeEnabled && !wakeListening && !isAwake && !(speechManager && speechManager.isRecording)) startWakeListening(); }, 1000);
+  };
+  wakeRecognition.onend = () => {
+    wakeListening = false;
+    if (wakeEnabled && !isAwake && !(speechManager && speechManager.isRecording)) {
+      setTimeout(startWakeListening, 300);
+    }
+  };
+  
+  try {
+    wakeRecognition.start();
+    wakeListening = true;
+    updateStatusIndicator();
+  } catch (e) {
+    console.warn('唤醒监听启动失败:', e);
+    setTimeout(startWakeListening, 1000);
+  }
+}
+
+/* 停止唤醒监听 */
+function stopWakeListening() {
+  if (wakeRecognition) {
+    try { wakeRecognition.stop(); } catch(e) {}
+    wakeRecognition = null;
+  }
+  wakeListening = false;
+}
+
+/* 唤醒开关切换 */
+function toggleWake() {
+  wakeEnabled = !wakeEnabled;
+  const toggle = document.getElementById('wakeToggle');
+  localStorage.setItem('xiaofeng_wake_enabled', wakeEnabled ? '1' : '0');
+  
+  if (wakeEnabled) {
+    toggle.classList.add('active');
+    if (persistentMicStream && persistentMicStream.active) {
+      startWakeListening();
+    } else {
+      requestMicPermission().then(granted => {
+        if (granted) {
+          startWakeListening();
+        } else {
+          wakeEnabled = false;
+          toggle.classList.remove('active');
+          localStorage.setItem('xiaofeng_wake_enabled', '0');
+        }
+      });
+    }
+    showToast('语音唤醒已开启，说"你好，小锋"唤醒我', 'success');
+  } else {
+    toggle.classList.remove('active');
+    stopWakeListening();
+    isAwake = false;
+    updateStatusIndicator();
+    showToast('语音唤醒已关闭');
+  }
+}
+
+/* ===== 摄像头面板拖拽与缩放管理 ===== */
+const cameraDrag = {
+  dragging: false, resizing: false,
+  startX: 0, startY: 0, startLeft: 0, startTop: 0, startWidth: 0, startHeight: 0,
+  left: 0, top: 80, width: 300, height: 300,
+  
+  init() {
+    const saved = localStorage.getItem('xiaofeng_camera_pos');
+    if (saved) { const p = JSON.parse(saved); this.left = p.left || 0; this.top = p.top || 80; this.width = p.width || 300; this.height = p.height || 300; }
+    this.apply();
+    document.getElementById('cameraDragHandle').addEventListener('mousedown', (e) => this.startDrag(e));
+    document.getElementById('cameraDragHandle').addEventListener('dblclick', () => this.reset());
+    document.getElementById('cameraResizeHandle').addEventListener('mousedown', (e) => this.startResize(e));
+    document.getElementById('cameraDragHandle').addEventListener('touchstart', (e) => this.startDrag(e.touches[0]));
+    document.getElementById('cameraResizeHandle').addEventListener('touchstart', (e) => this.startResize(e.touches[0]));
+    document.addEventListener('mousemove', (e) => this.onMove(e));
+    document.addEventListener('mouseup', () => this.onEnd());
+    document.addEventListener('touchmove', (e) => this.onMove(e.touches[0]));
+    document.addEventListener('touchend', () => this.onEnd());
+  },
+  
+  startDrag(e) {
+    this.dragging = true;
+    this.startX = e.clientX; this.startY = e.clientY;
+    const rect = document.getElementById('cameraSection').getBoundingClientRect();
+    this.startLeft = rect.left; this.startTop = rect.top;
+  },
+  
+  startResize(e) {
+    this.resizing = true;
+    this.startX = e.clientX; this.startY = e.clientY;
+    this.startWidth = this.width; this.startHeight = this.height;
+    e.stopPropagation();
+  },
+  
+  onMove(e) {
+    if (this.dragging) {
+      const dx = e.clientX - this.startX; const dy = e.clientY - this.startY;
+      this.left = Math.max(0, Math.min(window.innerWidth - this.width, this.startLeft + dx));
+      this.top = Math.max(0, Math.min(window.innerHeight - 60, this.startTop + dy));
+      this.apply();
+    }
+    if (this.resizing) {
+      const dx = e.clientX - this.startX; const dy = e.clientY - this.startY;
+      this.width = Math.max(180, Math.min(600, this.startWidth + dx));
+      this.height = Math.max(180, Math.min(600, this.startHeight + dy));
+      this.apply();
+    }
+  },
+  
+  onEnd() { this.dragging = false; this.resizing = false; this.save(); },
+  
+  apply() {
+    const sec = document.getElementById('cameraSection');
+    sec.style.right = 'auto'; sec.style.top = this.top + 'px';
+    sec.style.left = this.left + 'px';
+    const cont = document.querySelector('.camera-container');
+    cont.style.width = this.width + 'px';
+    cont.style.height = this.height + 'px';
+  },
+  
+  save() {
+    localStorage.setItem('xiaofeng_camera_pos', JSON.stringify({ left: this.left, top: this.top, width: this.width, height: this.height }));
+  },
+  
+  reset() {
+    this.left = 0; this.top = 80; this.width = 300; this.height = 300;
+    this.apply(); this.save();
+  }
+};
+
+/* ===== 事件绑定 ===== */
+
+/* 发送按钮 */
+sendBtn.addEventListener('click', sendMessage);
+
+/* 输入框回车发送（Shift+Enter 换行） */
+textInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+});
+
+/* 输入框自动调整高度 */
+textInput.addEventListener('input', () => {
+  textInput.style.height = 'auto';
+  textInput.style.height = Math.min(textInput.scrollHeight, 100) + 'px';
+  updateMagicTrace(textInput.value, '输入中：小锋正在观察你的问题。');
+  updateSafetyPanels(textInput.value);
+});
+
+/* 麦克风按钮 */
+micBtn.addEventListener('click', async () => {
+  if (!micPermissionGranted) {
+    const granted = await ensurePermissions();
+    if (!granted) return;
+  }
+  if (ttsManager.isSpeaking) {
+    ttsManager.cancel();
+  }
+  if (!speechManager) {
+    speechManager = new SpeechManager(
+      (text) => { interimTextEl.textContent = text; },
+      async (text) => {
+        interimTextEl.textContent = '';
+        ttsManager.cancel();
+        if (speechManager && speechManager.isRecording) {
+          speechManager.isRecording = false;
+          try { speechManager.recognition.stop(); } catch(e) {}
+        }
+        if (isAwake) {
+          isAwake = false;
+          if (wakeTimeout) { clearTimeout(wakeTimeout); wakeTimeout = null; }
+          updateStatusIndicator();
+        }
+        const toolResult = await toolManager.handleTool(text);
+        if (toolResult) {
+          addMessage('user', text);
+          setAvatarState('thinking');
+          addMessage('ai', '⏳ 处理中...');
+          await new Promise(r => setTimeout(r, 100));
+          const lastAiRow = chatArea.querySelector('.message-row.ai:last-child .message-bubble');
+          if (lastAiRow) {
+            const iconMap = {datetime:'🕐', weather:'🌤️', music:'🎵'};
+            lastAiRow.innerHTML = '<div class="tool-result">' + (iconMap[toolResult.toolName]||'🔧') + ' ' + renderMarkdown(toolResult.result) + '</div>';
+          }
+          setAvatarState('idle');
+          ttsManager.speak(toolResult.result.replace(/[🎵🌤️🕐🔍⏳🔧]/g, ''));
+          saveChatHistory();
+        } else {
+          callLLMAPI(text);
+        }
+        if (wakeEnabled) {
+          setTimeout(() => { startWakeListening(); }, 300);
+        }
+      },
+      (msg) => { showToast(msg, 'error'); }
+    );
+  }
+  if (speechManager.isRecording) {
+    speechManager.stop();
+    if (wakeEnabled) {
+      setTimeout(() => { startWakeListening(); }, 300);
+    }
+  } else {
+    stopWakeListening();
+    speechManager.start();
+  }
+});
+
+/* 摄像头按钮 */
+cameraBtn.addEventListener('click', async () => {
+  if (!cameraPermissionGranted && !cameraManager.stream) {
+    try {
+      const testStream = await navigator.mediaDevices.getUserMedia({ video: true });
+      cameraPermissionGranted = true;
+      testStream.getTracks().forEach(t => t.stop());
+    } catch (e) {
+      if (e.name === 'NotAllowedError') {
+        showToast('摄像头权限被拒绝。请在浏览器设置中允许摄像头访问', 'error');
+        return;
+      }
+    }
+  }
+  if (cameraManager.isCameraOn) {
+    cameraManager.close();
+  } else {
+    cameraManager.open();
+  }
+});
+
+/* 摄像头面板关闭按钮 */
+document.getElementById('cameraCloseBtn').addEventListener('click', () => {
+  cameraManager.close();
+});
+
+/* 拍照分析按钮 */
+analyzeBtn.addEventListener('click', () => {
+  if (!cameraManager.isCameraOn) {
+    showToast('请先开启摄像头', 'error');
+    return;
+  }
+  analyzePhoto();
+});
+
+/* 自动分析按钮 */
+autoAnalyzeBtn.addEventListener('click', () => {
+  if (!cameraManager.isCameraOn) {
+    showToast('请先开启摄像头', 'error');
+    return;
+  }
+  const btn = autoAnalyzeBtn;
+  if (btn.classList.contains('active')) {
+    btn.classList.remove('active');
+    cameraManager.stopAutoAnalyze();
+    showToast('已关闭自动分析');
+  } else {
+    btn.classList.add('active');
+    cameraManager.startAutoAnalyze();
+    showToast('已开启自动分析（每5秒）', 'success');
+  }
+});
+
+/* 唤醒开关按钮 */
+document.getElementById('wakeToggle').addEventListener('click', toggleWake);
+
+/* 清空对话按钮 */
+document.getElementById('clearChatBtn').addEventListener('click', () => {
+  chatArea.innerHTML = '';
+  localStorage.removeItem('xiaofeng_chat_history');
+  conversationHistory = [];
+  showToast('对话已清空', 'success');
+  addMessage('ai', '对话已清空！我是 **小锋** ✨，有什么可以帮你的吗？');
+});
+
+/* ===== TTS 设置绑定 ===== */
+function populateTTSVoices() {
+  const synth = window.speechSynthesis;
+  if (!synth) return;
+  const voices = synth.getVoices();
+  if (voices.length === 0) return;
+  const select = document.getElementById('ttsVoice');
+  // 保留第一个默认选项
+  select.innerHTML = '<option value="">浏览器默认</option>';
+  // 筛选中文和英文语音
+  voices.forEach(v => {
+    if (v.lang.startsWith('zh') || v.lang.startsWith('en')) {
+      const opt = document.createElement('option');
+      opt.value = v.name;
+      opt.textContent = v.name + ' (' + v.lang + ')';
+      select.appendChild(opt);
+    }
+  });
+  // 如果程序里已有保存的音色，恢复选中
+  const savedVoiceName = ttsManager.voice ? ttsManager.voice.name : '';
+  if (savedVoiceName) {
+    for (let i = 0; i < select.options.length; i++) {
+      if (select.options[i].value === savedVoiceName) {
+        select.selectedIndex = i;
+        break;
+      }
+    }
+  }
+}
+
+function saveTTSConfig() {
+  const voiceName = document.getElementById('ttsVoice').value;
+  const rate = parseFloat(document.getElementById('ttsRate').value);
+  const pitch = parseFloat(document.getElementById('ttsPitch').value);
+  const dialect = document.getElementById('ttsDialect').value;
+  localStorage.setItem('xiaofeng_tts_config', JSON.stringify({ voiceName, rate, pitch, dialect }));
+}
+
+function applyTTSConfig() {
+  const config = JSON.parse(localStorage.getItem('xiaofeng_tts_config') || '{}');
+  if (config.rate !== undefined) {
+    ttsManager.rate = config.rate;
+    document.getElementById('ttsRate').value = config.rate;
+    document.getElementById('ttsRateVal').textContent = config.rate.toFixed(1) + 'x';
+  }
+  if (config.pitch !== undefined) {
+    ttsManager.pitch = config.pitch;
+    document.getElementById('ttsPitch').value = config.pitch;
+    document.getElementById('ttsPitchVal').textContent = config.pitch.toFixed(1);
+  }
+  if (config.dialect !== undefined) {
+    document.getElementById('ttsDialect').value = config.dialect;
+  }
+  // 音色需要等语音列表加载后设置
+  const savedVoiceName = config.voiceName || '';
+  if (savedVoiceName) {
+    const voices = window.speechSynthesis.getVoices();
+    const found = voices.find(v => v.name === savedVoiceName);
+    if (found) ttsManager.voice = found;
+  }
+}
+
+/* TTS 语速滑块 */
+document.getElementById('ttsRate').addEventListener('input', () => {
+  const val = document.getElementById('ttsRate').value;
+  document.getElementById('ttsRateVal').textContent = parseFloat(val).toFixed(1) + 'x';
+  ttsManager.rate = parseFloat(val);
+  saveTTSConfig();
+});
+
+/* TTS 语调滑块 */
+document.getElementById('ttsPitch').addEventListener('input', () => {
+  const val = document.getElementById('ttsPitch').value;
+  document.getElementById('ttsPitchVal').textContent = parseFloat(val).toFixed(1);
+  ttsManager.pitch = parseFloat(val);
+  saveTTSConfig();
+});
+
+/* TTS 音色选择 */
+document.getElementById('ttsVoice').addEventListener('change', () => {
+  const name = document.getElementById('ttsVoice').value;
+  if (name) {
+    const voices = window.speechSynthesis.getVoices();
+    const found = voices.find(v => v.name === name);
+    if (found) ttsManager.voice = found;
+  } else {
+    ttsManager.voice = null;
+  }
+  saveTTSConfig();
+});
+
+/* TTS 方言选择 */
+document.getElementById('ttsDialect').addEventListener('change', saveTTSConfig);
+
+/* TTS 试听按钮 */
+document.getElementById('ttsTestBtn').addEventListener('click', () => {
+  ttsManager.speak('你好，我是小锋，这是我的声音');
+});
+
+/* ===== 全局键盘快捷键 ===== */
+document.addEventListener('keydown', (e) => {
+  // Ctrl+Enter: 发送
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+    e.preventDefault();
+    if (textInput.value.trim() && !isApiBusy) sendMessage();
+  }
+  // Ctrl+M: 切换麦克风
+  if ((e.ctrlKey || e.metaKey) && e.key === 'm') {
+    e.preventDefault();
+    if (speechManager) {
+      speechManager.isRecording ? speechManager.stop() : speechManager.start();
+    }
+  }
+  // Ctrl+Shift+C: 切换摄像头
+  if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'C' || e.key === 'c')) {
+    e.preventDefault();
+    if (cameraManager.isCameraOn) cameraManager.close(); else cameraManager.open();
+  }
+  // Escape: 关闭设置面板
+  if (e.key === 'Escape') {
+    if (document.getElementById('settingsOverlay').classList.contains('open')) {
+      closeSettings();
+    }
+  }
+});
+
+/* ===== 全局未捕获异常处理 ===== */
+window.addEventListener('unhandledrejection', (e) => {
+  showToast('操作异常：' + (e.reason?.message || '未知错误'), 'error');
+});
+
+/* ===== 聊天设置绑定 ===== */
+document.getElementById('systemPrompt').addEventListener('change', () => {
+  configManager.save({ systemPrompt: document.getElementById('systemPrompt').value });
+});
+
+document.getElementById('maxRounds').addEventListener('change', () => {
+  const val = parseInt(document.getElementById('maxRounds').value) || 20;
+  document.getElementById('maxRounds').value = Math.max(1, Math.min(100, val));
+  configManager.save({ maxRounds: Math.max(1, Math.min(100, val)) });
+});
+
+/* ===== 初始化 ===== */
+async function checkPermissions() {
+  try {
+    if (navigator.permissions) {
+      try {
+        const micStatus = await navigator.permissions.query({ name: 'microphone' });
+        micPermissionGranted = micStatus.state === 'granted';
+        micStatus.onchange = () => {
+          const wasGranted = micPermissionGranted;
+          micPermissionGranted = micStatus.state === 'granted';
+          if (micPermissionGranted && !persistentMicStream) {
+            requestMicPermission();
+          }
+          if (!micPermissionGranted && wasGranted) {
+            showToast('麦克风权限已被收回', 'error');
+          }
+        };
+      } catch (e) {}
+
+      try {
+        const camStatus = await navigator.permissions.query({ name: 'camera' });
+        cameraPermissionGranted = camStatus.state === 'granted';
+        camStatus.onchange = () => {
+          const wasGranted = cameraPermissionGranted;
+          cameraPermissionGranted = camStatus.state === 'granted';
+          if (!cameraPermissionGranted && wasGranted) {
+            showToast('摄像头权限已被收回', 'error');
+          }
+        };
+      } catch (e) {}
+    }
+
+    /* 如果权限已授予但没有持久流，自动获取 */
+    if (micPermissionGranted && !persistentMicStream) {
+      await requestMicPermission();
+    }
+  } catch (e) {}
+}
+
+function init() {
+  /* 检测 file:// 协议并显示横幅 */
+  if (location.protocol === 'file:') {
+    const dismissed = localStorage.getItem('xiaofeng_protocol_banner_dismissed');
+    if (!dismissed) document.getElementById('protocolBanner').style.display = 'flex';
+  }
+  document.getElementById('closeProtocolBanner').addEventListener('click', () => {
+    document.getElementById('protocolBanner').style.display = 'none';
+    localStorage.setItem('xiaofeng_protocol_banner_dismissed', '1');
+  });
+
+  if (!window.isSecureContext && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+    const banner = document.getElementById('secureMediaBanner');
+    if (banner) banner.style.display = 'block';
+  }
+
+  checkPermissions();
+  
+  /* 初始化摄像头拖拽 */
+  cameraDrag.init();
+
+  /* 初始化课堂实验台 */
+  initClassroomLab();
+
+  /* 初始化手机访问入口 */
+  initMobileAccess();
+
+  /* 加载聊天记录 */
+  loadChatHistory();
+
+  /* 如果没有聊天记录，显示欢迎消息 */
+  if (!chatArea.children.length) {
+    addMessage('ai', '你好呀！我是 **小锋** ✨\n\n我可以和你语音对话、分析摄像头画面，还能回答各种问题！\n\n点击 🎤 开始语音，或直接输入文字和我聊天吧~');
+  }
+
+  /* TTS 语音列表加载与配置恢复 */
+  if (window.speechSynthesis) {
+    window.speechSynthesis.getVoices();
+    window.speechSynthesis.onvoiceschanged = () => {
+      populateTTSVoices();
+      applyTTSConfig();
+    };
+    // 初始尝试加载（部分浏览器可能已就绪）
+    setTimeout(() => {
+      populateTTSVoices();
+      applyTTSConfig();
+    }, 500);
+  }
+
+  /* 加载聊天设置 */
+  const sysPromptEl = document.getElementById('systemPrompt');
+  const maxRoundsEl = document.getElementById('maxRounds');
+  if (configManager.config.systemPrompt) {
+    sysPromptEl.value = configManager.config.systemPrompt;
+  }
+  if (configManager.config.maxRounds) {
+    maxRoundsEl.value = configManager.config.maxRounds;
+  }
+
+  /* 如果未配置 API，提示用户 */
+  if (!configManager.isConfigured()) {
+    setTimeout(() => {
+      showToast('请先点击 ⚙️ 设置 API 信息', 'error');
+    }, 1500);
+  }
+
+  /* 恢复唤醒开关状态 */
+  const wakeWasEnabled = localStorage.getItem('xiaofeng_wake_enabled');
+  if (wakeWasEnabled === '1') {
+    wakeEnabled = true;
+    document.getElementById('wakeToggle').classList.add('active');
+    requestMicPermission().then(granted => {
+      if (granted) startWakeListening();
+    });
+  }
+
+  /* 页面卸载时释放所有媒体流 */
+  window.addEventListener('beforeunload', () => {
+    cameraManager.hardClose();
+    if (persistentMicStream) {
+      persistentMicStream.getTracks().forEach(t => t.stop());
+      persistentMicStream = null;
+    }
+    stopVADMonitoring();
+    if (vadAudioCtx) {
+      vadAudioCtx.close().catch(() => {});
+      vadAudioCtx = null;
+    }
+  });
+}
+
+init();
+</script>
+</body>
+</html>
